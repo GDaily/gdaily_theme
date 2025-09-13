@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<ruleset name="MyProject">
+    <rule ref="WordPress" />
+
+    <!-- 排除 Yoda Condition -->
+    <exclude name="WordPress.PHP.YodaConditions" />
+    
+    <!-- 排除已廢棄規則 -->
+    <exclude name="Generic.Functions.CallTimePassByReference" />
+
+    <!-- 掃描當前目錄 -->
+    <file>.</file>
+</ruleset>

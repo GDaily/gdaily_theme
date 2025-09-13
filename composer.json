@@ -1,0 +1,6 @@
+{
+  "require": {
+    "ksubileau/color-thief-php": "^2.0",
+    "htmlburger/carbon-fields": "^3.6"
+  }
+}

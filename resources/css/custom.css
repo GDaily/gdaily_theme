@@ -1,0 +1,126 @@
+article {
+  @apply mx-10;
+}
+
+article >,
+.entry-content > * {
+  @apply mx-auto max-w-content;
+}
+
+.entry-content,
+.block-editor-block-list__layout {
+  @apply mx-auto max-w-content no-copy;
+  h1 {
+    @apply text-2xl;
+  }
+
+  h2 {
+    @apply text-xl;
+  }
+
+  h3 {
+    @apply py-3 mt-32 mb-10 text-2xl font-extrabold text-center rounded-md text-sky-600 bg-sky-100;
+  }
+
+  h4 {
+    @apply text-xl font-extrabold text-sky-400;
+  }
+
+  p {
+    @apply text-lg leading-10 tracking-wide;
+  }
+
+  pre,
+  code {
+    @apply select-text;
+    /*   @apply px-2 py-1 font-bold text-red-400 bg-gray-100 rounded select-text; */
+  }
+  blockquote {
+    @apply relative block p-4 my-5 text-base leading-tight text-gray-600 break-words bg-white border-l-8 pl-11 border-sky-200;
+  }
+
+  img {
+    @apply object-contain max-w-full max-h-full mx-auto;
+  }
+  table {
+    @apply w-full border border-collapse border-gray-300 table-auto;
+
+    thead th {
+      @apply bg-gray-100;
+    }
+
+    th,
+    td {
+      @apply px-4 py-2 border border-gray-300;
+    }
+    a {
+      @apply font-extrabold no-underline text-sky-600;
+    }
+  }
+
+  ol,
+  ul {
+    @apply ml-10;
+  }
+
+  p,
+  ul,
+  ol {
+    a {
+      @apply font-extrabold no-underline text-sky-600;
+
+      &:hover {
+        @apply no-underline;
+      }
+    }
+
+    @apply mb-3;
+  }
+
+  ul:not(.block-editor-block-variation-picker__variations) {
+    li {
+      @apply list-disc list-outside;
+    }
+  }
+
+  ul,
+  ol {
+    li {
+      @apply pb-1 list-decimal list-outside;
+    }
+  }
+
+  button {
+    @apply inline-flex items-center px-5 py-1 mx-2 text-base font-extrabold text-center text-white rounded-lg bg-sky-300 hover:bg-sky-400 focus:ring-4 focus:outline-none focus:ring-blue-300;
+    a {
+      @apply text-white;
+    }
+  }
+}
+
+#comments {
+  .depth-1 {
+    background: #f9f9f9;
+    padding: 30px 50px 30px 50px;
+    border-radius: 20px;
+    margin: 50px 0px;
+
+    a {
+      @apply text-sky-600;
+    }
+  }
+}
+
+/* 滾動條 */
+
+::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+::-webkit-scrollbar {
+  width: 12px;
+  background-color: #f5f5f5;
+}
+::-webkit-scrollbar-thumb {
+  cursor: pointer;
+  background-color: #b9e8eb;
+}

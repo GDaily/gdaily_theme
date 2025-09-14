@@ -11,6 +11,9 @@ require_once get_template_directory() . '/function/carbon_fields.php';
 /*  特色圖片取色 */
 require_once get_template_directory() . '/function/color_matcher.php';
 
+/*  分頁導航函數 */
+require_once get_template_directory() . '/function/wpbeginner_numeric_posts_nav.php';
+
 
 /*  初始化，運行一次 */
 
@@ -157,7 +160,7 @@ function trimImageWhitespace($imagePath, $bgColor = [255, 255, 255], $tolerance 
 {
     // 檢查圖片是否存在
     if (!file_exists($imagePath)) {
-        die("圖片不存在1212: " . $imagePath);
+       return 192;
     }
 
     // 根據圖片格式創建 GD 圖片資源
@@ -361,6 +364,73 @@ add_filter('rest_authentication_errors', function ($result) {
 
 
 
+/**
+ * 處理單篇文章的縮圖顏色分析和設定
+ * 
+ * @param int $post_id 文章 ID
+ * @return array|false 返回處理結果或 false（如果失敗）
+ */
+function process_post_tailwind_color($post_id) {
+    // 檢查是否有縮圖
+    $thumbnail_id = get_post_thumbnail_id($post_id);
+    if (!$thumbnail_id) {
+        return false;
+    }
+    
+    // 檢查縮圖文件是否存在
+    $thumbnail_serverPath = get_attached_file($thumbnail_id);
+    if (!file_exists($thumbnail_serverPath)) {
+        return false;
+    }
+    
+    try {
+        // 使用 ColorMatcher 分析顏色
+        $matcher = new ColorMatcher();
+        $colorResult = $matcher->findClosestColor($thumbnail_serverPath);
+        
+        // 設定 meta 值
+        carbon_set_post_meta($post_id, 'tailwind_color', $colorResult['tailwind_class']);
+        carbon_set_post_meta($post_id, 'tailwind_hex_base_color', $colorResult['tailwind_hex_base_color']);
+        carbon_set_post_meta($post_id, 'tailwind_hex_light_color', $colorResult['tailwind_hex_light_color']);
+        
+        return [
+            'success' => true,
+            'post_id' => $post_id,
+            'tailwind_class' => $colorResult['tailwind_class'],
+            'base_color' => $colorResult['tailwind_hex_base_color'],
+            'light_color' => $colorResult['tailwind_hex_light_color']
+        ];
+        
+    } catch (Exception $e) {
+        return false;
+    }
+}
+
+/**
+ * 在文章儲存時自動執行顏色分析
+ * 
+ * @param int $post_id 文章 ID
+ */
+function auto_process_tailwind_color_on_save($post_id) {
+    // 檢查是否為自動儲存或修訂版本
+    if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+        return;
+    }
+    
+    // 只處理 'post' 類型的文章
+    if (get_post_type($post_id) !== 'post') {
+        return;
+    }
+    
+    // 執行顏色分析（不限制發布狀態）
+    process_post_tailwind_color($post_id);
+}
+
+// 註冊多個 hook：在文章儲存時自動執行
+add_action('save_post', 'auto_process_tailwind_color_on_save', 10, 1);
+add_action('wp_insert_post', 'auto_process_tailwind_color_on_save', 10, 1);
+add_action('edit_post', 'auto_process_tailwind_color_on_save', 10, 1);
+
 /*自訂Feed*/
 
 add_action('init', 'customRSS');
@@ -397,44 +467,3 @@ remove_action('wp_head', 'feed_links', 2);
 
 
 /*禁用官方Feed*/
-
-
-/* adsense短代碼 */
-function adsense_shortcode()
-{
-    ob_start(); ?>
-<div class="adsense_content_img">
-    <ins class="adsbygoogle example_responsive_1" style="display:inline-block" data-ad-client="ca-pub-7349735987764759"
-        data-ad-slot="4688261049" data-ad-format="auto" data-full-width-responsive="true"></ins>
-    <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
-</div>
-<?php
-    return ob_get_clean();
-}
-add_shortcode('adsense', 'adsense_shortcode');
-// spell-checker: enable
-/* adsense短代碼 */
-
-
-
-function insert_text_before_second_h2($content)
-{
-    // 找出所有 h3
-    preg_match_all('/<h3[^>]*>.*?<\/h3>/i', $content, $matches, PREG_OFFSET_CAPTURE);
-
-    if (isset($matches[0][1])) {
-        $second_h3 = $matches[0][1];
-        $insert_pos = $second_h3[1]; // 直接在 h3 標籤前方插入
-
-        // 要插入的文字 HTML
-        $insert_html = '<p style="color:red;">這是插入在第二個 H3 之前的文字</p>';
-
-        // 插入內容
-        $content = substr_replace($content, $insert_html, $insert_pos, 0);
-    }
-
-    return $content;
-}
-add_filter('the_content', 'insert_text_before_second_h2');

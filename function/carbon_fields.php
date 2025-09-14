@@ -21,7 +21,18 @@ add_action('carbon_fields_register_fields', function () {
                 ->set_default_value('')  // 设置默认值
                 ->set_attribute('readOnly', true)  // 禁用编辑
                 ->set_width(50),
+                 
+            //新增 tailwind_hex_base_color
+            Field::make('text', 'tailwind_hex_base_color', __('圖片深色調基礎十六進制碼'))
+                ->set_default_value('#ffffff')  // 设置默认值為白色 
+                ->set_attribute('readOnly', true)  // 禁用编辑
+                ->set_width(50),
 
+            //新稱加 tailwind_hex_light_color
+            Field::make('text', 'tailwind_hex_light_color', __('圖片淺色調基礎十六進制碼'))
+                ->set_default_value('#ffffff')  // 设置默认值為白色 
+                ->set_attribute('readOnly', true)  // 禁用编辑
+                ->set_width(50),
 
             Field::make('color', 'tailwind_background_custom', '自訂背景色')
                 ->set_palette(array(
@@ -137,7 +148,8 @@ document.addEventListener("DOMContentLoaded", function() {
         'slate': '#F8FAFC', // 新增 slate
         'violet': '#FDF2F8', // 新增 violet
     };
-    // 取得 input 元素
+
+    // 取得 tailwind_color input 元素
     const inputElement = document.querySelector('input[name="carbon_fields_compact_input[_tailwind_color]"]');
     if (inputElement) {
         // 更新背景顏色的函數
@@ -156,6 +168,57 @@ document.addEventListener("DOMContentLoaded", function() {
         // 監聽值變化
         inputElement.addEventListener('input', updateBackgroundColor);
     }
+
+    // 取得 tailwind_hex input 元素
+    const hexInputElement = document.querySelector('input[name="carbon_fields_compact_input[_tailwind_hex]"]');
+    if (hexInputElement) {
+        // 更新背景顏色的函數
+        function updateBackgroundColor() {
+            const selectedColor = hexInputElement.value;
+            hexInputElement.style.backgroundColor = selectedColor || '#FFFFFF'; // 預設白色背景
+        }
+
+        // 初次加載時調用一次
+        updateBackgroundColor();
+
+        // 監聽值變化
+        hexInputElement.addEventListener('input', updateBackgroundColor);
+    }
+
+    // 取得 tailwind_hex_base_color input 元素
+    const hexBaseColorInputElement = document.querySelector(
+        'input[name="carbon_fields_compact_input[_tailwind_hex_base_color]"]');
+    if (hexBaseColorInputElement) {
+        // 更新背景顏色的函數
+        function updateBaseColorBackground() {
+            const selectedColor = hexBaseColorInputElement.value;
+            hexBaseColorInputElement.style.backgroundColor = selectedColor || '#FFFFFF'; // 預設白色背景
+        }
+
+        // 初次加載時調用一次
+        updateBaseColorBackground();
+
+        // 監聽值變化
+        hexBaseColorInputElement.addEventListener('input', updateBaseColorBackground);
+    }
+
+    // 取得 tailwind_hex_light_color input 元素
+    const hexLightColorInputElement = document.querySelector(
+        'input[name="carbon_fields_compact_input[_tailwind_hex_light_color]"]');
+    if (hexLightColorInputElement) {
+        // 更新背景顏色的函數
+        function updateLightColorBackground() {
+            const selectedColor = hexLightColorInputElement.value;
+            hexLightColorInputElement.style.backgroundColor = selectedColor || '#FFFFFF'; // 預設白色背景
+        }
+
+        // 初次加載時調用一次
+        updateLightColorBackground();
+
+        // 監聽值變化
+        hexLightColorInputElement.addEventListener('input', updateLightColorBackground);
+    }
+
 });
 </script>
 <?php

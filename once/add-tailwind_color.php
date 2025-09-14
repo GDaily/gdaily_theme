@@ -14,6 +14,12 @@ function migrate_app_name_meta_batch($request) {
     $offset = intval($request->get_param('offset') ?? 0);
     $limit = 200;
 
+    // 獲取總文章數（僅在第一次請求時計算）
+    $total_posts_count = 0;
+    if ($offset === 0) {
+        $total_posts_count = wp_count_posts('post')->publish;
+    }
+
     $posts = get_posts(array(
         'post_type'   => 'post',
         'post_status' => 'publish',
@@ -22,25 +28,33 @@ function migrate_app_name_meta_batch($request) {
     ));
 
     $count_updated = 0;
-
+    $processed_posts = [];
+ 
     foreach ($posts as $post) {
-        $current_value = carbon_get_post_meta($post->ID, 'tailwind_color');
-
-        if (empty($current_value)) {
-            $thumbnail_id = get_post_thumbnail_id($post->ID);
-            if ($thumbnail_id) {
-                $thumbnail_serverPath = get_attached_file($thumbnail_id);
-                $matcher = new ColorMatcher();
-                $tailwind_main_class = $matcher->findClosestColor($thumbnail_serverPath);
-                carbon_set_post_meta($post->ID, 'tailwind_color', $tailwind_main_class);
-                $count_updated++;
-            }
+        // 使用共用的處理函數
+        $result = process_post_tailwind_color($post->ID);
+        
+        if ($result && $result['success']) {
+            $processed_posts[] = [
+                'id' => $post->ID,
+                'title' => $post->post_title,
+                'tailwind_class' => $result['tailwind_class'],
+                'base_color' => $result['base_color'],
+                'light_color' => $result['light_color']
+            ];
+            
+            $count_updated++;
         }
     }
 
     return array(
         'updated' => $count_updated,
-        'next_offset' => count($posts) < $limit ? null : $offset + $limit
+        'next_offset' => count($posts) < $limit ? null : $offset + $limit,
+        'current_batch_posts' => count($posts),
+        'current_offset' => $offset,
+        'total_posts_count' => $total_posts_count,
+        'processed_so_far' => $offset + count($posts),
+        'processed_posts' => $processed_posts
     );
 }
 
@@ -78,6 +92,15 @@ function render_tailwind_migrate_page() {
     <p>此工具會自動將尚未設定 tailwind_color 的文章依據縮圖進行分析與設定。</p>
     <button id="start-migration" class="button button-primary">開始處理</button>
     <button id="stop-migration" class="button">中止處理</button>
+    
+    <!-- 進度條區域 -->
+    <div id="progress-container" style="margin-top: 1em; display: none;">
+        <div style="background: #f1f1f1; border-radius: 13px; padding: 3px;">
+            <div id="progress-bar" style="background: #4CAF50; width: 0%; height: 20px; border-radius: 10px; transition: width 0.3s;"></div>
+        </div>
+        <div id="progress-text" style="margin-top: 5px; font-weight: bold;"></div>
+    </div>
+    
     <div id="migration-log" style="margin-top: 1em; max-height: 300px; overflow-y: auto;"></div>
 </div>
 
@@ -85,14 +108,24 @@ function render_tailwind_migrate_page() {
 document.addEventListener('DOMContentLoaded', () => {
     let offset = 0;
     let stopFlag = false;
+    let totalPosts = 0;
+    let processedSoFar = 0;
     const logEl = document.getElementById('migration-log');
     const startBtn = document.getElementById('start-migration');
     const stopBtn = document.getElementById('stop-migration');
+    const progressContainer = document.getElementById('progress-container');
+    const progressBar = document.getElementById('progress-bar');
+    const progressText = document.getElementById('progress-text');
 
     startBtn.addEventListener('click', () => {
         offset = 0;
         stopFlag = false;
+        totalPosts = 0;
+        processedSoFar = 0;
         logEl.innerHTML = "<p>開始批次處理...</p>";
+        progressContainer.style.display = 'block';
+        progressBar.style.width = '0%';
+        progressText.textContent = '準備中...';
         startBtn.disabled = true;
         stopBtn.disabled = false;
         runBatch();
@@ -104,6 +137,14 @@ document.addEventListener('DOMContentLoaded', () => {
         startBtn.disabled = false;
         stopBtn.disabled = true;
     });
+
+    function updateProgress() {
+        if (totalPosts > 0) {
+            const percentage = Math.round((processedSoFar / totalPosts) * 100);
+            progressBar.style.width = percentage + '%';
+            progressText.textContent = `進度: ${processedSoFar} / ${totalPosts} (${percentage}%)`;
+        }
+    }
 
     async function runBatch() {
         if (stopFlag) return;
@@ -120,13 +161,39 @@ document.addEventListener('DOMContentLoaded', () => {
         });
 
         const data = await res.json();
-        logEl.innerHTML += `<p>處理 offset ${offset}：已更新 ${data.updated} 筆</p>`;
+        console.log('Response data:', data); // 調試用
+        
+        // 更新總數（只在第一次）
+        if (data.total_posts_count && totalPosts === 0) {
+            totalPosts = data.total_posts_count;
+        }
+        
+        // 更新已處理數量
+        if (data.processed_so_far) {
+            processedSoFar = data.processed_so_far;
+        }
+        
+        // 更新進度條
+        updateProgress();
+        
+        logEl.innerHTML += `<p><strong>處理 offset ${offset}：已更新 ${data.updated} 筆 (當前批次 ${data.current_batch_posts} 筆文章)</strong></p>`;
+        
+        // 顯示每篇處理的文章詳細資訊
+        if (data.processed_posts && data.processed_posts.length > 0) {
+            data.processed_posts.forEach(post => {
+                const colorInfo = post.base_color ? ` | Base: ${post.base_color} | Light: ${post.light_color}` : '';
+                logEl.innerHTML += `<p style="margin-left: 20px; font-size: 12px;">ID: ${post.id} | ${post.title} | 顏色: ${post.tailwind_class}${colorInfo}</p>`;
+            });
+        }
+        
         logEl.scrollTop = logEl.scrollHeight;
 
         if (data.next_offset !== null && !stopFlag) {
             offset = data.next_offset;
             setTimeout(runBatch, 1000);
         } else if (!stopFlag) {
+            progressBar.style.width = '100%';
+            progressText.textContent = `完成！總共處理 ${processedSoFar} 篇文章`;
             logEl.innerHTML += "<p><strong>✅ 所有批次處理完成。</strong></p>";
             startBtn.disabled = false;
             stopBtn.disabled = true;

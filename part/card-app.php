@@ -6,15 +6,11 @@ $thumbnail_id = get_post_thumbnail_id(get_the_ID());
 
 $thumbnail_url = wp_get_attachment_image_src($thumbnail_id, array(64,64,true))[0];
  
-$tailwind_color = carbon_get_post_meta($post->ID, 'tailwind_color');
+// 獲取 hex 顏色欄位
+$tailwind_hex_base_color = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_base_color');
+$tailwind_hex_light_color = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_light_color');
 
-$app_name = carbon_get_post_meta($post->ID, 'app_name');
- 
-$tailwind_background_custom = getColorName(carbon_get_post_meta($post->ID, 'tailwind_background_custom'));
-
-if(!empty($tailwind_background_custom) ){
-    $tailwind_color = $tailwind_background_custom ; 
-}
+$app_name = carbon_get_post_meta(get_the_ID(), 'app_name');
   
  
 ?>
@@ -23,10 +19,12 @@ if(!empty($tailwind_background_custom) ){
 
 
 <div x-data="{ scale: false }" @mouseenter="scale = true" @mouseleave="scale = false"
-    class="  mx-auto   mt-16 text-gray-900  rounded-lg  shadow-sm  max-w-80 bg-opacity-40    bg-<?php echo $tailwind_color;?>-100   ">
+    class="mx-auto mt-16 text-gray-900 rounded-lg shadow-sm max-w-80 bg-opacity-40"
+    style="background-color: <?php echo $tailwind_hex_light_color; ?>; background-opacity: 0.4;">
 
     <a href="<?php the_permalink(); ?>">
-        <div class=" h-24 overflow-hidden rounded-t-lg w-full  bg-opacity-30    bg-<?php echo $tailwind_color;?>-200">
+        <div class="w-full h-24 overflow-hidden rounded-t-lg bg-opacity-30"
+             style="background-color: <?php echo $tailwind_hex_light_color; ?>; background-opacity: 0.3;">
 
         </div>
         <div

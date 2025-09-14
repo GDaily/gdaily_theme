@@ -37,7 +37,7 @@
        
         }
         else{
-            echo '<div class="grid grid-cols-1 gap-y-10 gap-x-x md:grid-cols-2 lg:grid-cols-3">';
+            echo '<div class="grid grid-cols-1 gap-y-10 gap-x-4 md:grid-cols-2 lg:grid-cols-3">';
 
             if (have_posts()):
                 while (have_posts()): the_post();

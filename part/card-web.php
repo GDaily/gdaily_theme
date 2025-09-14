@@ -13,7 +13,12 @@ $thumbnail_url = wp_get_attachment_image_src($thumbnail_id, array(400,200,true))
 // 獲取 hex 顏色欄位
 $tailwind_hex_base_color = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_base_color');
 $tailwind_hex_light_color = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_light_color');
+$tailwind_hex_base_color_custom = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_base_color_custom');
+$tailwind_hex_light_color_custom = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_light_color_custom');
 
+// 決定最終使用的顏色值
+$final_base_color = !empty($tailwind_hex_base_color_custom) ? $tailwind_hex_base_color_custom : $tailwind_hex_base_color;
+$final_light_color = !empty($tailwind_hex_light_color_custom) ? $tailwind_hex_light_color_custom : $tailwind_hex_light_color;
  
 $meta_data = wp_get_attachment_metadata($thumbnail_id);
  
@@ -34,7 +39,7 @@ if ($category_id) {
 
  <div x-data="{ scale: false }" @mouseenter="scale = true" @mouseleave="scale = false" 
       class="block max-w-2xl mb-12 overflow-hidden shadow-md rounded-xl max-w-[400px] mx-auto relative" 
-      style="background-color: <?php echo $tailwind_hex_light_color; ?>; background-opacity: 0.3;"
+      style="background-color: <?php echo $final_light_color; ?>; background-opacity: 0.3;"
       @mouseenter="scale = true">
 
      <a href="<?php the_permalink(); ?>">
@@ -54,7 +59,7 @@ if ($category_id) {
          <div class="w-1/2 text-center">
              <a href="<?php echo $category_url; ?>"
                  class="px-3 py-1 text-opacity-75 bg-opacity-50 rounded-xl" 
-                 style="background-color: <?php echo $tailwind_hex_light_color; ?>; color: <?php echo $tailwind_hex_base_color; ?>;">
+                 style="background-color: <?php echo $final_light_color; ?>; color: <?php echo $final_base_color; ?>;">
                  <?php echo $category_name; ?>
              </a>
          </div>

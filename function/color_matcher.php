@@ -40,7 +40,6 @@ class ColorMatcher {
 
         // 提取顏色名稱的前綴（如 "red-500" 變為 "red"）
         $colorParts = explode('-', $closestBaseColor);
-        $tailwindClass = $colorParts[0];
         
         // 取得 base 顏色的十六進制碼
         $tailwindBaseHex = null;
@@ -60,8 +59,7 @@ class ColorMatcher {
             }
         }
 
-        return [
-            'tailwind_class' => $tailwindClass,
+        return [ 
             'tailwind_hex_base_color' => $tailwindBaseHex,
             'tailwind_hex_light_color' => $tailwindLightHex
         ];

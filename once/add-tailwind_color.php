@@ -38,7 +38,6 @@ function migrate_app_name_meta_batch($request) {
             $processed_posts[] = [
                 'id' => $post->ID,
                 'title' => $post->post_title,
-                'tailwind_class' => $result['tailwind_class'],
                 'base_color' => $result['base_color'],
                 'light_color' => $result['light_color']
             ];
@@ -182,7 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (data.processed_posts && data.processed_posts.length > 0) {
             data.processed_posts.forEach(post => {
                 const colorInfo = post.base_color ? ` | Base: ${post.base_color} | Light: ${post.light_color}` : '';
-                logEl.innerHTML += `<p style="margin-left: 20px; font-size: 12px;">ID: ${post.id} | ${post.title} | 顏色: ${post.tailwind_class}${colorInfo}</p>`;
+                logEl.innerHTML += `<p style="margin-left: 20px; font-size: 12px;">ID: ${post.id} | ${post.title}${colorInfo}</p>`;
             });
         }
         

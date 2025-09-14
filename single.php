@@ -6,12 +6,25 @@
 // 初始化數據
 $post_data = [
     'category' => get_the_category(),
-    'tailwind_hex_base_color' => carbon_get_post_meta($post->ID, 'tailwind_hex_base_color'),
-    'tailwind_hex_light_color' => carbon_get_post_meta($post->ID, 'tailwind_hex_light_color'),
+    'base_color_default' => carbon_get_post_meta($post->ID, 'tailwind_hex_base_color'),
+    'light_color_default' => carbon_get_post_meta($post->ID, 'tailwind_hex_light_color'),
+    'base_color_custom' => carbon_get_post_meta($post->ID, 'tailwind_hex_base_color_custom'),
+    'light_color_custom' => carbon_get_post_meta($post->ID, 'tailwind_hex_light_color_custom'),
+    'final_base_color' => '',
+    'final_light_color' => '',
     'adsense_enable' => carbon_get_post_meta($post->ID, 'adsense_enable'),
     'size' => [800, 400],
     'thumbnail_url' => ''
 ];
+
+// 當 custom 值不為空時，使用 custom 的數值，否則使用 default 值
+$post_data['final_base_color'] = !empty($post_data['base_color_custom']) ? 
+    $post_data['base_color_custom'] : 
+    $post_data['base_color_default'];
+
+$post_data['final_light_color'] = !empty($post_data['light_color_custom']) ? 
+    $post_data['light_color_custom'] : 
+    $post_data['light_color_default'];
 
 // 取得父分類
 $parent_category = $post_data['category'][0]->category_parent ? 
@@ -50,8 +63,8 @@ get_header();
 
 // 準備共用參數
 $template_args = [
-    'tailwind_hex_base_color' => $post_data['tailwind_hex_base_color'],
-    'tailwind_hex_light_color' => $post_data['tailwind_hex_light_color'],
+    'final_base_color' => $post_data['final_base_color'],
+    'final_light_color' => $post_data['final_light_color'],
     'thumbnail_url' => $post_data['thumbnail_url'],
     'adsense_enable' => $post_data['adsense_enable']
 ];

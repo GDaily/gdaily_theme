@@ -4,7 +4,7 @@
 
  
 
-         <figure class="pt-10 py-3 md:py-10 text-center" style="background-color: <?php echo $args['tailwind_hex_light_color']; ?>;">
+         <figure class="py-3 pt-10 text-center md:py-10" style="background-color: <?php echo $args['final_light_color']; ?>;">
 
              <div class="flex mx-auto w-[256px] h-[256px] overflow-hidden bg-white rounded-full">
                  <img src="<?php echo $args['thumbnail_url']; ?>" alt="" loading="lazy" decoding="async"
@@ -14,7 +14,7 @@
 
              <figcaption
                  class="py-5 mt-5 text-4xl font-extrabold text-center text-gray-600"
-                 style="color: <?php echo $args['tailwind_hex_base_color']; ?>;">
+                 style="color: <?php echo $args['final_base_color']; ?>;">
                  <?php echo  carbon_get_post_meta($post->ID, 'app_name'); ?>
              </figcaption>
 

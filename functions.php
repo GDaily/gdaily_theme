@@ -389,14 +389,12 @@ function process_post_tailwind_color($post_id) {
         $colorResult = $matcher->findClosestColor($thumbnail_serverPath);
         
         // 設定 meta 值
-        carbon_set_post_meta($post_id, 'tailwind_color', $colorResult['tailwind_class']);
-        carbon_set_post_meta($post_id, 'tailwind_hex_base_color', $colorResult['tailwind_hex_base_color']);
+                carbon_set_post_meta($post_id, 'tailwind_hex_base_color', $colorResult['tailwind_hex_base_color']);
         carbon_set_post_meta($post_id, 'tailwind_hex_light_color', $colorResult['tailwind_hex_light_color']);
         
         return [
             'success' => true,
-            'post_id' => $post_id,
-            'tailwind_class' => $colorResult['tailwind_class'],
+            'post_id' => $post_id, 
             'base_color' => $colorResult['tailwind_hex_base_color'],
             'light_color' => $colorResult['tailwind_hex_light_color']
         ];

@@ -5,8 +5,8 @@
         <?php
             $post_id = get_the_ID();
             $adsense_enable = $args['adsense_enable'] ;
-            $tailwind_hex_base_color = esc_attr($args['tailwind_hex_base_color'] ?? '#6b7280');
-            $tailwind_hex_light_color = esc_attr($args['tailwind_hex_light_color'] ?? '#f9fafb');
+            $tailwind_hex_base_color = esc_attr($args['final_base_color'] ?? '#6b7280');
+            $tailwind_hex_light_color = esc_attr($args['final_light_color'] ?? '#f9fafb');
             $thumbnail_url = esc_url($args['thumbnail_url'] ?? '');
             $image_path = esc_attr($args['imagePath'] ?? '');
         ?>    <figure class="px-3 py-10 md:px-auto" style="background-color: <?php echo $tailwind_hex_light_color; ?>;">

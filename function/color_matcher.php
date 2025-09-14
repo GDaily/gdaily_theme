@@ -9,9 +9,17 @@ class ColorMatcher {
 	private $tailwindColors;
 	
 	public function __construct() {
-        $jsonPath = __DIR__ . '../data/tailwind-colors.json';
+        $jsonPath = __DIR__ . '/../data/tailwind-colors.json';
+        if (!file_exists($jsonPath)) {
+            error_log('ColorMatcher: tailwind-colors.json file not found at: ' . $jsonPath);
+            throw new Exception('Tailwind colors file not found');
+        }
         $jsonContent = file_get_contents($jsonPath);
         $this->tailwindColors = json_decode($jsonContent, true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            error_log('ColorMatcher: JSON decode error: ' . json_last_error_msg());
+            throw new Exception('Failed to decode tailwind colors JSON');
+        }
     }
     // 計算兩個顏色之間的距離
     private function colorDistance($color1, $color2) {

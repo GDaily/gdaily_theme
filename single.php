@@ -41,40 +41,42 @@ if (has_post_thumbnail($post->ID)) {
     )[0];
 }
 
-
 get_header();
 
-// 準備共用參數
-$template_args = [
-    'final_base_color' => $post_data['final_base_color'],
-    'final_light_color' => $post_data['final_light_color'],
-    'thumbnail_url' => $post_data['thumbnail_url'],
-    'adsense_enable' => $post_data['adsense_enable']
-];
+// 檢查是否有文章
+if ( have_posts() ) :
+    // 準備共用參數
+    $template_args = [
+        'final_base_color' => $post_data['final_base_color'],
+        'final_light_color' => $post_data['final_light_color'],
+        'thumbnail_url' => $post_data['thumbnail_url'],
+        'adsense_enable' => $post_data['adsense_enable']
+    ];
 
-if ($is_app_category) {
-    // APP 分類特殊處理
-    $app_size = [192, 192];
-    $thumbnail_app_url = wp_get_attachment_image_src(
-        get_post_thumbnail_id($post->ID), 
-        $app_size
-    )[0];
-    
-    $parsed_url = parse_url($thumbnail_app_url);
-    $relative_path = str_replace($parsed_url['scheme'] . '://' . $parsed_url['host'], '', $thumbnail_app_url);
-    $server_file_path = $_SERVER['DOCUMENT_ROOT'] . $relative_path;
-    $max_size = trimImageWhitespace($server_file_path);
-    
-    $template_args['scale'] = 0.6 + 1 - $max_size / 192;
-    $template_args['thumbnail_app_url'] = $thumbnail_app_url;
-    
-    get_template_part('part/single-app', get_post_format(), $template_args);
-} else {
-    // 一般文章
-    $template_args['imagePath'] = $post_data['thumbnail_url'];
-    
-    get_template_part('part/single-normal', get_post_format(), $template_args);
-}
+    if ($is_app_category) {
+        // APP 分類特殊處理
+        $app_size = [192, 192];
+        $thumbnail_app_url = wp_get_attachment_image_src(
+            get_post_thumbnail_id($post->ID), 
+            $app_size
+        )[0];
+        
+        $parsed_url = parse_url($thumbnail_app_url);
+        $relative_path = str_replace($parsed_url['scheme'] . '://' . $parsed_url['host'], '', $thumbnail_app_url);
+        $server_file_path = $_SERVER['DOCUMENT_ROOT'] . $relative_path;
+        $max_size = trimImageWhitespace($server_file_path);
+        
+        $template_args['scale'] = 0.6 + 1 - $max_size / 192;
+        $template_args['thumbnail_app_url'] = $thumbnail_app_url;
+        
+        get_template_part('part/single-app', get_post_format(), $template_args);
+    } else {
+        // 一般文章
+        $template_args['imagePath'] = $post_data['thumbnail_url'];
+        
+        get_template_part('part/single-normal', get_post_format(), $template_args);
+    }
+endif;
 ?>
 
 <style type="text/css">

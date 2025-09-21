@@ -37,33 +37,33 @@ if ($category_id) {
 
 ?>
 
- <div x-data="{ scale: false }" @mouseenter="scale = true" @mouseleave="scale = false" 
-      class="block max-w-2xl mb-12 overflow-hidden shadow-md rounded-xl max-w-[400px] mx-auto relative" 
-      style="background-color: <?php echo $final_light_color; ?>; background-opacity: 0.3;"
-      @mouseenter="scale = true">
 
-     <a href="<?php the_permalink(); ?>">
-         <div class="overflow-hidden ">
-             <img class="object-cover w-full   h-[200px] transition-transform duration-300"
-                 :class="scale ? 'scale-110' : ''" src="<?php echo $thumbnail_url; ?>" alt="Article">
-         </div>
+ <a href="<?php the_permalink(); ?>"
+     class="group block max-w-2xl mb-12 overflow-hidden shadow-md rounded-xl max-w-[400px] mx-auto relative"
+     style="background-color: <?php echo esc_attr($final_light_color); ?>; background-opacity: 0.3;">
 
-         <div class="h-20 px-6 mt-10 mb-10 overflow-hidden ">
-             <h3 class="font-semibold text-center text-gray-500 text-xxl">
-                 <?php the_title(); ?>
-             </h3>
-         </div>
-     </a>
+     <div class="overflow-hidden">
+         <img onload="this.classList.add('opacity-100','scale-100')"
+             class="object-cover w-full h-[200px] opacity-0 scale-100 transition-all duration-300 ease-in-out group-hover:scale-110"
+             src="<?php echo esc_url($thumbnail_url); ?>"
+             alt="<?php echo esc_attr(get_the_title() . ' - ' . $category_name); ?>">
+     </div>
+
+     <div class="h-20 px-6 mt-10 mb-10 overflow-hidden">
+         <h2 class="font-semibold text-center text-gray-500 text-xxl">
+             <?php the_title(); ?>
+         </h2>
+     </div>
 
      <div class="flex items-center justify-center pb-5 mt-8 font-extrabold">
          <div class="w-1/2 text-center">
-             <a href="<?php echo $category_url; ?>"
-                 class="px-3 py-1 text-opacity-75 bg-opacity-50 rounded-xl" 
-                 style="background-color: <?php echo $final_light_color; ?>; color: <?php echo $final_base_color; ?>;">
-                 <?php echo $category_name; ?>
-             </a>
+             <span class="inline-block px-3 py-1 text-opacity-75 rounded-xl" style="background-color: <?php echo esc_attr($final_base_color ?: '#f3f3f3'); ?>80; /* 16进制加 alpha */
+             color: <?php echo esc_attr($final_light_color ?: '#000'); ?>;">
+                 <?php echo esc_html($category_name ?: '未分類'); ?>
+             </span>
          </div>
-
-         <span class="w-1/2 text-xs text-center text-gray-600 no-copy"><?php echo get_the_date(); ?></span>
+         <time class="w-1/2 text-xs text-center text-gray-600 no-copy">
+             <?php echo esc_html(get_the_date()); ?>
+         </time>
      </div>
- </div>
+ </a>

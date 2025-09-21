@@ -30,24 +30,26 @@ $app_name = carbon_get_post_meta(get_the_ID(), 'app_name');
 
     <a href="<?php the_permalink(); ?>">
         <div class="w-full h-24 overflow-hidden rounded-t-lg bg-opacity-30"
-             style="background-color: <?php echo $final_light_color; ?>; background-opacity: 0.3;">
+            style="background-color: <?php echo $final_light_color; ?>; background-opacity: 0.3;">
 
         </div>
         <div
             class="relative flex items-center justify-center w-24 h-24 mx-auto -mt-12 overflow-hidden bg-white border-4 border-white rounded-full">
             <img class="object-cover object-center h-32 transition-transform duration-300 rounded-lg max-w-14 max-h-14"
-                :class="scale ? 'scale-110' : ''" src='<?php echo $thumbnail_url  ; ?>' alt='Woman looking front'>
+                :class="scale ? 'scale-110' : ''" src="<?php echo esc_url( $thumbnail_url ); ?>"
+                alt="<?php echo esc_attr( ! empty( $app_name ) ? $app_name : get_the_title() ); ?>">
 
         </div>
 
         <div class="mt-3 mb-5 text-center ">
-            <h3 class="font-semibold"> <?php echo $app_name; ?></h3>
+            <h2 class="font-semibold"> <?php echo esc_html( $app_name ); ?></h2>
             <div class="px-10 py-3 overflow-hidden tracking-widest text-gray-500 max-h-20 "> <?php the_excerpt(); ?>
             </div>
         </div>
 
         <div class="p-4 mx-8 mt-2 text-xs text-center ">
-            <?php echo get_the_date(); ?>
+            <time
+                datetime="<?php echo esc_attr( get_the_date( 'c' ) ); ?>"><?php echo esc_html( get_the_date() ); ?></time>
         </div>
 
     </a>

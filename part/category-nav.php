@@ -20,7 +20,7 @@ if ($is_parent ) {
         echo '<div class="flex items-center justify-center py-10">';
         echo '<div class="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">';
         foreach ($child_terms as $child_term) {
-            echo '<button class="my-2 rounded-xl whitespace-nowrap  bg-gray-100  flex mx-3 ">';
+            echo '<button class="my-2 rounded-xl whitespace-nowrap  bg-white  flex mx-3 ">';
             echo '<a href="' . esc_url(get_term_link($child_term)) . '" class="    px-5 py-3  text-gray-500 font-bold no-underline">' . esc_html($child_term->name) . '</a>';
             echo '</button>';
         }

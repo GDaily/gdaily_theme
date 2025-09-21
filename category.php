@@ -22,10 +22,15 @@
             echo '<div class="grid grid-cols-1 gap-y-10 gap-x-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">';
 
             if (have_posts()):
+                $post_num = 0;
                 while (have_posts()): the_post();
- 
-                    get_template_part('part/card', 'app', get_post_format());
-
+                    $post_num++;
+                    if ( $post_num == 4 || $post_num == 10 ) {
+                        get_template_part( 'part/card', 'app-adsense', get_post_format() );
+                        get_template_part( 'part/card', 'app', get_post_format() );
+                    } else {
+                        get_template_part('part/card', 'app', get_post_format());
+                    }
                 endwhile;
                 wp_reset_postdata();
             else:
@@ -40,10 +45,15 @@
             echo '<div class="grid grid-cols-1 gap-y-10 gap-x-4 md:grid-cols-2 lg:grid-cols-3">';
 
             if (have_posts()):
+                $post_num = 0;
                 while (have_posts()): the_post();
- 
-                    get_template_part('part/card', 'web', get_post_format());
-
+                    $post_num++;
+                    if ( $post_num == 4 || $post_num == 10 ) {
+                        get_template_part( 'part/card', 'web-adsense', get_post_format() );
+                        get_template_part( 'part/card', 'web', get_post_format() );
+                    } else {
+                        get_template_part('part/card', 'web', get_post_format());
+                    }
                 endwhile;
                 wp_reset_postdata();
             else:

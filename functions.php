@@ -11,8 +11,18 @@ require_once get_template_directory() . '/function/carbon_fields.php';
 /*  特色圖片取色 */
 require_once get_template_directory() . '/function/color_matcher.php';
 
+/*  圖片處理工具 */
+require_once get_template_directory() . '/function/image_processor.php';
+
 /*  分頁導航函數 */
 require_once get_template_directory() . '/function/wpbeginner_numeric_posts_nav.php';
+
+/*  廣告插入函數 */
+require_once get_template_directory() . '/function/adsense_inserter.php';
+
+/*  SEO Meta */
+require_once get_template_directory() . '/function/seoMeta.php';
+
 
 
 /*  初始化，運行一次 */
@@ -154,90 +164,6 @@ function custom_excerpt_more($more)
 add_filter('excerpt_more', 'custom_excerpt_more');
 
 
-
-
-function trimImageWhitespace($imagePath, $bgColor = [255, 255, 255], $tolerance = 10)
-{
-    // 檢查圖片是否存在
-    if (!file_exists($imagePath)) {
-       return 192;
-    }
-
-    // 根據圖片格式創建 GD 圖片資源
-    $imageInfo = getimagesize($imagePath);
-    $imageType = $imageInfo[2];
-
-    switch ($imageType) {
-        case IMAGETYPE_JPEG:
-            $image = imagecreatefromjpeg($imagePath);
-            break;
-        case IMAGETYPE_PNG:
-            $image = imagecreatefrompng($imagePath);
-            break;
-        case IMAGETYPE_GIF:
-            $image = imagecreatefromgif($imagePath);
-            break;
-        default:
-            die("不支持的圖片格式: " . $imagePath);
-    }
-
-    // 檢查圖片是否成功創建
-    if (!$image) {
-        die("無法創建圖片資源: " . $imagePath);
-    }
-
-    $width = imagesx($image);
-    $height = imagesy($image);
-
-    $minX = $width;
-    $minY = $height;
-    $maxX = 0;
-    $maxY = 0;
-
-    // 遍歷每個像素，找到非背景色的最小/最大邊界
-    for ($y = 0; $y < $height; $y++) {
-        for ($x = 0; $x < $width; $x++) {
-            $rgb = imagecolorat($image, $x, $y);
-            $colors = imagecolorsforindex($image, $rgb);
-
-            // 檢查透明度（對於 PNG 和 GIF 格式）
-            if (($imageType == IMAGETYPE_PNG || $imageType == IMAGETYPE_GIF) && ($rgb & 0x7F000000) >> 24 == 127) {
-                // 當前像素是完全透明，視為白邊
-                continue;
-            }
-
-            // 計算當前像素與背景色的顏色差異
-            $rDiff = abs($colors['red'] - $bgColor[0]);
-            $gDiff = abs($colors['green'] - $bgColor[1]);
-            $bDiff = abs($colors['blue'] - $bgColor[2]);
-
-            // 檢查當前像素是否接近背景色（使用容忍度）
-            if ($rDiff > $tolerance || $gDiff > $tolerance || $bDiff > $tolerance) {
-                if ($x < $minX) $minX = $x;
-                if ($x > $maxX) $maxX = $x;
-                if ($y < $minY) $minY = $y;
-                if ($y > $maxY) $maxY = $y;
-            }
-        }
-    }
-
-    // 計算去除白邊後的寬高
-    if ($minX > $maxX || $minY > $maxY) {
-        // 如果沒有非背景像素，則返回原始尺寸
-        return [$width, $height];
-    }
-
-    $trimmedWidth = $maxX - $minX + 1;
-    $trimmedHeight = $maxY - $minY + 1;
-
-    // 取最大值
-    $maxSize = max($trimmedWidth, $trimmedHeight);
-
-    // 返回最大值
-    return $maxSize;
-}
-
-
 /*多久之前的時間*/
 function meks_time_ago()
 {
@@ -245,7 +171,7 @@ function meks_time_ago()
 }
 
 
-/*區塊編輯器*/
+/*禁止預設區塊編輯器*/
 function disable_gutenberg_editor()
 {
     add_filter('use_block_editor_for_post', '__return_false', 10);
@@ -266,7 +192,7 @@ add_filter('intermediate_image_sizes', function ($sizes) {
 });
 
 
-/** 刪除 oast標籤 */
+/** 刪除 Yoast標籤 */
 
 add_action('wp_head', function () {
     ob_start(function ($o) {
@@ -339,95 +265,34 @@ add_action('pre_ping', 'no_self_ping');
 
 
 
-/* 關閉 REST API，僅允許管理員使用 */
+/* 限制 REST API：前台未登入用戶禁止存取 */
 add_filter('rest_authentication_errors', function ($result) {
     // 如果之前已驗證，則不處理
     if (true === $result || is_wp_error($result)) {
         return $result;
     }
 
-    // 取得目前使用者
-    $current_user = wp_get_current_user();
-
-    // 如果是管理員則允許
-    if (in_array('administrator', (array) $current_user->roles)) {
+    // 後台請求 (含 AJAX) 不限制
+    if (is_admin()) {
         return $result;
     }
 
-    // 否則拒絕訪問
-    return new WP_Error(
-        'rest_not_allowed',
-        __('You are not allowed to access this resource.'),
-        array('status' => 403)
-    );
+    // 如果使用者未登入且在前台，禁止存取
+    if (!is_user_logged_in()) {
+        return new WP_Error(
+            'rest_not_allowed',
+            __('You are not allowed to access the REST API.'),
+            array('status' => 403)
+        );
+    }
+
+    // 其他情況允許
+    return $result;
 });
 
 
 
-/**
- * 處理單篇文章的縮圖顏色分析和設定
- * 
- * @param int $post_id 文章 ID
- * @return array|false 返回處理結果或 false（如果失敗）
- */
-function process_post_tailwind_color($post_id) {
-    // 檢查是否有縮圖
-    $thumbnail_id = get_post_thumbnail_id($post_id);
-    if (!$thumbnail_id) {
-        return false;
-    }
-    
-    // 檢查縮圖文件是否存在
-    $thumbnail_serverPath = get_attached_file($thumbnail_id);
-    if (!file_exists($thumbnail_serverPath)) {
-        return false;
-    }
-    
-    try {
-        // 使用 ColorMatcher 分析顏色
-        $matcher = new ColorMatcher();
-        $colorResult = $matcher->findClosestColor($thumbnail_serverPath);
-        
-        // 設定 meta 值
-                carbon_set_post_meta($post_id, 'tailwind_hex_base_color', $colorResult['tailwind_hex_base_color']);
-        carbon_set_post_meta($post_id, 'tailwind_hex_light_color', $colorResult['tailwind_hex_light_color']);
-        
-        return [
-            'success' => true,
-            'post_id' => $post_id, 
-            'base_color' => $colorResult['tailwind_hex_base_color'],
-            'light_color' => $colorResult['tailwind_hex_light_color']
-        ];
-        
-    } catch (Exception $e) {
-        return false;
-    }
-}
 
-/**
- * 在文章儲存時自動執行顏色分析
- * 
- * @param int $post_id 文章 ID
- */
-function auto_process_tailwind_color_on_save($post_id) {
-    // 檢查是否為自動儲存或修訂版本
-    if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
-        return;
-    }
-    
-    // 只處理 'post' 類型的文章
-    if (get_post_type($post_id) !== 'post') {
-        return;
-    }
-    
-    // 執行顏色分析（不限制發布狀態）
-    process_post_tailwind_color($post_id);
-}
-
-// 註冊多個 hook：在文章儲存時自動執行
-add_action('save_post', 'auto_process_tailwind_color_on_save', 10, 1);
-add_action('wp_insert_post', 'auto_process_tailwind_color_on_save', 10, 1);
-add_action('edit_post', 'auto_process_tailwind_color_on_save', 10, 1);
 
 /*自訂Feed*/
 
@@ -465,3 +330,8 @@ remove_action('wp_head', 'feed_links', 2);
 
 
 /*禁用官方Feed*/
+
+
+ 
+
+ 

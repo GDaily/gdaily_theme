@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bc69e3fc42715f9056447d86f1f73d47",
+    "content-hash": "e89f19912f5eb53c661db79702f62a7a",
     "packages": [
         {
             "name": "htmlburger/carbon-fields",
@@ -148,16 +148,16 @@
         },
         {
             "name": "ksubileau/color-thief-php",
-            "version": "v2.0.1",
+            "version": "v2.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ksubileau/color-thief-php.git",
-                "reference": "a1378533433dae824c2e5b70359f8b6ae16b1deb"
+                "reference": "d6189b34a21b70aec6b56359aa5bf0e00ded9b4d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ksubileau/color-thief-php/zipball/a1378533433dae824c2e5b70359f8b6ae16b1deb",
-                "reference": "a1378533433dae824c2e5b70359f8b6ae16b1deb",
+                "url": "https://api.github.com/repos/ksubileau/color-thief-php/zipball/d6189b34a21b70aec6b56359aa5bf0e00ded9b4d",
+                "reference": "d6189b34a21b70aec6b56359aa5bf0e00ded9b4d",
                 "shasum": ""
             },
             "require": {
@@ -202,18 +202,96 @@
             ],
             "support": {
                 "issues": "https://github.com/ksubileau/color-thief-php/issues",
-                "source": "https://github.com/ksubileau/color-thief-php/tree/v2.0.1"
+                "source": "https://github.com/ksubileau/color-thief-php/tree/v2.0.2"
             },
-            "time": "2022-11-12T10:09:40+00:00"
+            "time": "2025-07-17T15:26:54+00:00"
+        },
+        {
+            "name": "scrivo/highlight.php",
+            "version": "v9.18.1.10",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/scrivo/highlight.php.git",
+                "reference": "850f4b44697a2552e892ffe71490ba2733c2fc6e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/scrivo/highlight.php/zipball/850f4b44697a2552e892ffe71490ba2733c2fc6e",
+                "reference": "850f4b44697a2552e892ffe71490ba2733c2fc6e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-json": "*",
+                "php": ">=5.4"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^4.8|^5.7",
+                "sabberworm/php-css-parser": "^8.3",
+                "symfony/finder": "^2.8|^3.4|^5.4",
+                "symfony/var-dumper": "^2.8|^3.4|^5.4"
+            },
+            "suggest": {
+                "ext-mbstring": "Allows highlighting code with unicode characters and supports language with unicode keywords"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "HighlightUtilities/functions.php"
+                ],
+                "psr-0": {
+                    "Highlight\\": "",
+                    "HighlightUtilities\\": ""
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-3-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Geert Bergman",
+                    "homepage": "http://www.scrivo.org/",
+                    "role": "Project Author"
+                },
+                {
+                    "name": "Vladimir Jimenez",
+                    "homepage": "https://allejo.io",
+                    "role": "Maintainer"
+                },
+                {
+                    "name": "Martin Folkers",
+                    "homepage": "https://twobrain.io",
+                    "role": "Contributor"
+                }
+            ],
+            "description": "Server side syntax highlighter that supports 185 languages. It's a PHP port of highlight.js",
+            "keywords": [
+                "code",
+                "highlight",
+                "highlight.js",
+                "highlight.php",
+                "syntax"
+            ],
+            "support": {
+                "issues": "https://github.com/scrivo/highlight.php/issues",
+                "source": "https://github.com/scrivo/highlight.php"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/allejo",
+                    "type": "github"
+                }
+            ],
+            "time": "2022-12-17T21:53:22+00:00"
         }
     ],
     "packages-dev": [],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {},
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
-    "platform-dev": [],
+    "platform": {},
+    "platform-dev": {},
     "plugin-api-version": "2.6.0"
 }

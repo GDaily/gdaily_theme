@@ -1,6 +1,6 @@
 <?php
 /**
- * Single post template
+ * Single post template with enhanced SEO structure
  */
 
 // 初始化數據
@@ -41,23 +41,6 @@ if (has_post_thumbnail($post->ID)) {
     )[0];
 }
 
-// 在第二個標題前插入廣告的函式
-function insert_adsense_before_second_heading($content) {
-    preg_match_all('/<h[23][^>]*>.*?<\/h[23]>/i', $content, $matches, PREG_OFFSET_CAPTURE);
-    
-    if (isset($matches[0][1])) {
-        $insert_pos = $matches[0][1][1];
-        ob_start();
-        get_template_part('part/adsense/adsense_content');
-        $insert_html = ob_get_clean();
-        $content = substr_replace($content, $insert_html, $insert_pos, 0);
-    }
-    
-    return $content;
-}
-
-// 註冊內容過濾器
-add_filter('the_content', 'insert_adsense_before_second_heading');
 
 get_header();
 
@@ -78,7 +61,7 @@ if ($is_app_category) {
     )[0];
     
     $parsed_url = parse_url($thumbnail_app_url);
-    $relative_path = str_replace($parsed_url['scheme'] . '://' . $parsed_url['host'], '.', $thumbnail_app_url);
+    $relative_path = str_replace($parsed_url['scheme'] . '://' . $parsed_url['host'], '', $thumbnail_app_url);
     $server_file_path = $_SERVER['DOCUMENT_ROOT'] . $relative_path;
     $max_size = trimImageWhitespace($server_file_path);
     
@@ -92,5 +75,19 @@ if ($is_app_category) {
     
     get_template_part('part/single-normal', get_post_format(), $template_args);
 }
+?>
 
+<style type="text/css">
+h2,
+h3 {
+    background-color: <?php echo esc_attr($post_data['final_light_color']);
+    ?> !important;
+    color: <?php echo esc_attr($post_data['final_base_color']);
+    ?> !important;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.375rem;
+}
+</style>
+
+<?php
 get_footer();

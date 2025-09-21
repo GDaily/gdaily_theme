@@ -3,10 +3,37 @@
 
 <head>
     <meta charset="<?php bloginfo( 'charset' ); ?>">
-    <meta name="viewport" content="width=device-width">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <link rel="profile" href="http://gmpg.org/xfn/11">
     <link rel="pingback" href="<?php bloginfo( 'pingback_url' ); ?>">
+    
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://pagead2.googlesyndication.com">
+    
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+
+    <!-- 插入 adsense js 檔案 <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7349735987764759"
+     crossorigin="anonymous"></script> 
+     單為單篇文章時需要檢查 carbon_get_post_meta($post->ID, 'adsense_enable') 
+     其他頁面不需要判斷固定直接引入 -->
+
+    <?php
+global $post;
+
+// 取得值並轉換成布林
+$adsense_enable_raw = carbon_get_post_meta( $post->ID, 'adsense_enable' );
+$adsense_enable = filter_var( $adsense_enable_raw, FILTER_VALIDATE_BOOLEAN );
+
+if ( ( is_single() && $adsense_enable ) || ! is_single() ) {
+    ?>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7349735987764759"
+        crossorigin="anonymous"></script>
+    <?php
+}
+?>
 
 
     <?php wp_head(); ?>
@@ -36,7 +63,6 @@
                 <div class="flex items-center justify-between">
                     <a href="<?php echo home_url() ;?>">
 
-                        <?xml version="1.0" encoding="utf-8"?>
                         <svg version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg"
                             xmlns:xlink="http://www.w3.org/1999/xlink" width="128px" height="48px" xml:space="preserve">
                             <g id="PathID_17" transform="matrix(0.243439, 0.0864258, -0.0854797, 0.24379, 11.9, -5.55)"

@@ -1,4 +1,27 @@
 <?php
+
+
+
+/* 
+插入 adsense js 檔案
+單為單篇文章時需要檢查，其他頁面不需要判斷固定直接引入  
+*/
+
+
+// 在 <head> 載入 Adsense JS 的邏輯
+function gd_insert_adsense_head_js() {
+    global $post;
+    // 取得值並轉換成布林
+    $adsense_enable_raw = is_object($post) ? carbon_get_post_meta( $post->ID, 'adsense_enable' ) : '';
+    $adsense_enable = filter_var( $adsense_enable_raw, FILTER_VALIDATE_BOOLEAN );
+
+    if ( ( is_single() && $adsense_enable ) || ! is_single() ) {
+        echo '<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7349735987764759" crossorigin="anonymous"></script>' . "\n";
+    }
+}
+add_action('wp_head', 'gd_insert_adsense_head_js', 5);
+
+
 // 取得廣告模板字串
 function get_ads_template() {
     if (function_exists('get_template_part')) {

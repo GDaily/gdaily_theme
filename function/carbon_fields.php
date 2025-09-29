@@ -67,6 +67,19 @@ add_action('carbon_fields_register_fields', function () {
                 ))
                 ->set_default_value('true'),
         ));
+
+   /*   custom META 標題描述欄位 */
+    Container::make('post_meta', 'Meta Title & Description')
+        ->where('post_type', '=', 'post')
+        ->add_fields(array(
+            Field::make('text', 'meta_title', 'Meta Title')
+                ->set_default_value('')
+                ->set_width(50),
+            Field::make('textarea', 'meta_description', 'Meta Description')
+                ->set_default_value('')
+                ->set_width(100),
+        ));
+
 });
 
 function getColorName($colorCode)

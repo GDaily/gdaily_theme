@@ -1,5 +1,8 @@
 <?php
 
+
+
+
 require_once __DIR__ . '/vendor/autoload.php';
 
 
@@ -22,6 +25,9 @@ require_once get_template_directory() . '/function/adsense_inserter.php';
 
 /*  SEO Meta */
 require_once get_template_directory() . '/function/seoMeta.php';
+
+/*  短代碼 */
+require_once get_template_directory() . '/function/url_short_code.php';
 
 
 
@@ -86,6 +92,19 @@ function tailpress_enqueue_scripts()
 
     wp_enqueue_style('tailpress', tailpress_asset('css/app.css'), array(), $app_css_time);
     wp_enqueue_script('tailpress', tailpress_asset('js/app.js'), array(), $app_js_time);
+
+
+
+    // 載入本地 alpinejs
+    add_action('wp_enqueue_scripts', function() {
+        wp_enqueue_script(
+            'alpinejs',
+            get_template_directory_uri() . '/source/js/alpinejs.min.js',
+            array(),
+            null,
+            array('strategy' => 'defer')
+        );
+    });
 }
 
 add_action('wp_enqueue_scripts', 'tailpress_enqueue_scripts');
@@ -330,8 +349,5 @@ remove_action('wp_head', 'feed_links', 2);
 
 
 /*禁用官方Feed*/
-
-
- 
 
  

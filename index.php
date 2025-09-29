@@ -17,6 +17,8 @@
 
 		if ( $post_num == 4 || $post_num == 10 ) {
 			get_template_part( 'part/card', 'web-adsense', get_post_format() );
+  
+
 			get_template_part( 'part/card', 'web', get_post_format() );
 		} else {
 			get_template_part( 'part/card', 'web', get_post_format() );

@@ -38,16 +38,16 @@ function wpbeginner_numeric_posts_nav() {
     /** Previous Post Link */
     if (get_previous_posts_link()) {
         printf(
-            '<button class="rounded-full py-2 px-3 text-center text-sm transition-all shadow-sm bg-gray-100 text-slate-700 hover:bg-gray-200 ml-2">%s</button>' . "\n",
+            '<button class="rounded-full py-2 px-3 text-center text-sm transition-all shadow-sm white text-slate-700 hover:bg-gray-200 ml-2">%s</button>' . "\n",
             get_previous_posts_link('Prev')
         );
     }
 
     /** Link to first page, plus ellipses if necessary */
     if (!in_array(1, $links)) {
-        $is_active = (1 == $paged) ? 'bg-black text-white' : 'bg-gray-100 text-slate-700 hover:bg-gray-200';
+        $is_active = (1 == $paged) ? 'bg-black text-white' : 'white text-slate-700 hover:bg-gray-200';
         printf(
-            '<button class="min-w-9 rounded-full py-2 px-4 text-center text-sm transition-all shadow-sm ml-2 %s" onclick="location.href=\'%s\'">%s</button>' . "\n",
+            '<button class="w-10 h-10 rounded-full flex items-center justify-center text-center text-sm transition-all shadow-lg ml-2 bg-white text-slate-700 hover:bg-gray-200 %s" onclick="location.href=\'%s\'">%s</button>' . "\n",
             $is_active,
             esc_url(get_pagenum_link(1)),
             '1'
@@ -60,9 +60,9 @@ function wpbeginner_numeric_posts_nav() {
     /** Link to current page, plus 2 pages in either direction if necessary */
     sort($links);
     foreach ((array)$links as $link) {
-        $is_active = ($paged == $link) ? 'bg-black text-white' : 'bg-gray-100 text-slate-700 hover:bg-gray-200';
+        $is_active = ($paged == $link) ? 'bg-black text-white' : ' bg-white text-slate-700 hover:bg-gray-200';
         printf(
-            '<button class="rounded-full py-2 px-4 text-center text-sm transition-all shadow-sm ml-2 %s" onclick="location.href=\'%s\'">%s</button>' . "\n",
+            '<button class="w-10 h-10  rounded-full flex items-center justify-center text-center text-sm transition-all shadow-sm ml-2 %s" onclick="location.href=\'%s\'">%s</button>' . "\n",
             $is_active,
             esc_url(get_pagenum_link($link)),
             $link
@@ -74,9 +74,9 @@ function wpbeginner_numeric_posts_nav() {
         if (!in_array($max - 1, $links))
             echo '<span class="flex items-center px-2">…</span>' . "\n";
 
-        $is_active = ($paged == $max) ? 'bg-black text-white' : 'bg-gray-100 text-slate-700 hover:bg-gray-200';
+        $is_active = ($paged == $max) ? 'bg-black text-white' : 'white text-slate-700 hover:bg-gray-200';
         printf(
-            '<button class="rounded-full py-2 px-4 text-center text-sm transition-all shadow-sm ml-2 %s" onclick="location.href=\'%s\'">%s</button>' . "\n",
+            '<button class="w-10 h-10 rounded-full flex items-center bg-white justify-center text-center text-sm transition-all shadow-sm ml-2 %s" onclick="location.href=\'%s\'">%s</button>' . "\n",
             $is_active,
             esc_url(get_pagenum_link($max)),
             $max
@@ -86,7 +86,7 @@ function wpbeginner_numeric_posts_nav() {
     /** Next Post Link */
     if (get_next_posts_link()) {
         printf(
-            '<button class="rounded-full py-2 px-3 text-center text-sm transition-all shadow-sm bg-gray-100 text-slate-700 hover:bg-gray-200 ml-2">%s</button>' . "\n",
+            '<button class="rounded-full py-2 px-3 text-center text-sm transition-all shadow-sm white text-slate-700 hover:bg-gray-200 ml-2">%s</button>' . "\n",
             get_next_posts_link('Next')
         );
     }

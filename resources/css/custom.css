@@ -83,10 +83,12 @@ article >,
     }
   }
 
+  /*   li 自動換行 */
+
   ul,
   ol {
     li {
-      @apply pb-1 list-decimal list-outside;
+      @apply pb-1 break-all list-decimal list-outside;
     }
   }
 
@@ -123,4 +125,56 @@ article >,
 ::-webkit-scrollbar-thumb {
   cursor: pointer;
   background-color: #b9e8eb;
+}
+
+/* 嵌入模板樣式 */
+.custom-embed {
+  @apply max-w-lg p-6 mx-auto bg-white border border-gray-200 rounded-lg shadow-md;
+}
+
+.embed-thumbnail {
+  @apply mb-4;
+}
+
+.embed-featured-image {
+  @apply object-cover w-full h-48 rounded-lg;
+}
+
+.embed-title {
+  @apply mb-3 text-xl font-bold leading-tight text-gray-900;
+}
+
+.embed-excerpt {
+  @apply mb-4 text-sm leading-relaxed text-gray-600;
+}
+
+.embed-meta {
+  @apply flex justify-between pt-3 text-xs text-gray-500 border-t border-gray-100;
+}
+
+.embed-date,
+.embed-author {
+  @apply inline-block;
+}
+
+code {
+  background: #2b2451;
+  display: block;
+  padding: 40px 15px 15px 15px; /* 預留上方空間放按鈕 */
+  border-radius: 10px;
+  color: white;
+  position: relative; /* 讓偽元素能定位 */
+  font-family: monospace;
+}
+
+code::before {
+  content: "";
+  position: absolute;
+  top: 12px;
+  left: 15px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ff5f57; /* 紅色 */
+  box-shadow: 20px 0 #ffbd2e, 40px 0 #28c940; /* 黃 & 綠 */
 }

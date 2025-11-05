@@ -25,7 +25,7 @@ $app_name = carbon_get_post_meta(get_the_ID(), 'app_name');
 
 
 <div x-data="{ scale: false }" @mouseenter="scale = true" @mouseleave="scale = false"
-    class="mx-auto mt-16 text-gray-900 rounded-lg shadow-sm max-w-80 bg-opacity-40"
+    class="mx-auto mb-16 text-gray-900 rounded-lg shadow-sm max-w-80 bg-opacity-40"
     style="background-color: <?php echo $final_light_color; ?>; background-opacity: 0.4;">
 
     <a href="<?php the_permalink(); ?>">
@@ -36,7 +36,7 @@ $app_name = carbon_get_post_meta(get_the_ID(), 'app_name');
         <div
             class="relative flex items-center justify-center w-24 h-24 mx-auto -mt-12 overflow-hidden bg-white border-4 border-white rounded-full">
             <img class="object-cover object-center h-32 transition-transform duration-300 rounded-lg max-w-14 max-h-14"
-                :class="scale ? 'scale-110' : ''" src="<?php echo esc_url( $thumbnail_url ); ?>"
+                :class="scale ? 'scale-110' :  ''" src="<?php echo esc_url( $thumbnail_url ); ?>"
                 alt="<?php echo esc_attr( ! empty( $app_name ) ? $app_name : get_the_title() ); ?>">
 
         </div>

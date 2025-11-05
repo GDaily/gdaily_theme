@@ -7,7 +7,45 @@
   \*****************************/
 /***/ (() => {
 
+window.addEventListener('load', function () {
+  document.querySelectorAll('code').forEach(function (code) {
+    var lineHeight = parseFloat(getComputedStyle(code).lineHeight);
+    var height = code.clientHeight;
+    if (height > lineHeight * 1.5) {
+      code.classList.add('multiline');
+    }
 
+    // 🌟 雙擊複製（桌面端）
+    code.addEventListener('dblclick', function () {
+      return copyCode(code);
+    });
+
+    // 🌟 長按複製（行動端）
+    var pressTimer;
+    code.addEventListener('touchstart', function () {
+      pressTimer = setTimeout(function () {
+        copyCode(code);
+      }, 600); // 長按 600ms 觸發
+    });
+    code.addEventListener('touchend', function () {
+      clearTimeout(pressTimer);
+    });
+    code.addEventListener('touchmove', function () {
+      clearTimeout(pressTimer); // 滑動時取消
+    });
+  });
+
+  // 複製功能
+  function copyCode(code) {
+    navigator.clipboard.writeText(code.innerText).then(function () {
+      var originalBg = code.style.backgroundColor;
+      code.style.backgroundColor = '#DDAA00'; // 成功提示
+      setTimeout(function () {
+        code.style.backgroundColor = originalBg;
+      }, 500);
+    });
+  }
+});
 
 /***/ }),
 

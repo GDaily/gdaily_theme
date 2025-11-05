@@ -45,7 +45,7 @@
         }
 
         /* 桌面端显示菜单 */
-        @media (min-width: 768px) {
+        @media (min-width: 1024px) {
             .mobile-menu {
                 display: flex !important;
             }
@@ -53,6 +53,7 @@
 
         .menu-toggle {
             cursor: pointer;
+            transition: all 0.3s ease;
         }
 
         .hamburger-icon {
@@ -69,6 +70,18 @@
 
         .menu-toggle.active .close-icon {
             display: block;
+        }
+
+        /* 確保選單按鈕在手機端右側對齊 */
+        @media (max-width: 1023px) {
+            .menu-toggle {
+                margin-left: auto;
+            }
+        }
+
+        /* 防止選單打開時頁面寬度變化 */
+        body.menu-open {
+            padding-right: var(--scrollbar-width, 0px);
         }
 
         /* 跳过链接 - 辅助功能 */
@@ -94,30 +107,31 @@
 
         <nav role="navigation" aria-label="<?php esc_attr_e( 'Primary Navigation', 'textdomain' ); ?>"
             class="relative bg-white primary-navigation">
-            <div class="container px-6 py-3 mx-auto md:flex">
+            <div class="container px-6 py-3 mx-auto lg:flex lg:items-center">
                 <!-- 网站Logo/品牌 -->
-                <div class="site-branding">
-                    <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="custom-logo-link"
-                        aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
-                        <img src="<?php echo get_template_directory_uri(); ?>/resources/img/________logo.svg"
-                            alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" class=" w-24  ">
-
-                    </a>
-                </div>
-                <div class="flex items-center justify-between">
-
+                <div class="flex items-center justify-between lg:justify-start">
+                    <!-- 移动端空白占位符，让logo居中 -->
+                    <div class="w-6 h-6 lg:hidden"></div>
+                    
+                    <div class="site-branding">
+                        <a href="<?php echo esc_url( home_url( '/' ) ); ?>" rel="home" class="custom-logo-link"
+                            aria-label="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>">
+                            <img src="<?php echo get_template_directory_uri(); ?>/resources/img/________logo.svg"
+                                alt="<?php echo esc_attr( get_bloginfo( 'name' ) ); ?>" class="w-24 ">
+                        </a>
+                    </div>
 
                     <!-- 移动端菜单按钮 -->
                     <div class="flex lg:hidden">
                         <button
-                            class="menu-toggle text-gray-500 hover:text-gray-600 focus:outline-none focus:text-gray-600"
+                            class="text-gray-500 menu-toggle hover:text-gray-600 focus:outline-none focus:text-gray-600"
                             type="button" aria-expanded="false" aria-controls="primary-menu"
                             aria-label="<?php esc_attr_e( 'Toggle navigation menu', 'textdomain' ); ?>">
-                            <svg class="hamburger-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            <svg class="w-6 h-6 hamburger-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M4 8h16M4 16h16" />
                             </svg>
-                            <svg class="close-icon w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                            <svg class="w-6 h-6 close-icon" fill="none" viewBox="0 0 24 24" stroke="currentColor"
                                 stroke-width="2" aria-hidden="true">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
@@ -126,14 +140,14 @@
                 </div>
 
                 <!-- 主导航菜单 -->
-                <div class="mobile-menu   absolute inset-x-0 z-20 w-full px-6 py-4 bg-white md:mt-0 md:p-0 md:top-0 md:relative md:opacity-100 md:translate-x-0 md:flex md:items-center md:justify-between"
+                <div class="absolute inset-x-0 z-20 w-full px-6 py-4 bg-white shadow-lg mobile-menu lg:mt-0 lg:p-0 lg:top-0 lg:relative lg:shadow-none lg:opacity-100 lg:translate-x-0 lg:flex lg:items-center lg:w-auto lg:ml-6 lg:flex-1"
                     id="primary-menu">
 
                     <!-- 主导航链接 -->
-                    <div class=" flex justify-between" role="menubar"
+                    <div class="flex justify-between lg:justify-start lg:flex-1" role="menubar"
                         aria-label="<?php esc_attr_e( 'Main Navigation', 'textdomain' ); ?>">
                         <ul
-                            class="flex  justify-between flex-col px-2 -mx-4 md:flex-row md:mx-10 md:py-0 main-navigation-links">
+                            class="flex flex-col px-2 -mx-4 space-y-2 lg:flex-row lg:space-y-0 lg:space-x-6 lg:mx-0 lg:px-0 lg:py-0 main-navigation-links">
                             <li role="menuitem">
 
                                 <a href="<?php echo esc_url( get_category_link(551) ); ?>"
@@ -171,7 +185,7 @@
                     </div>
 
                     <!-- 社交媒体链接 -->
-                    <div class="relative flex mt-4 md:mt-0 md:ml-auto social-links" role="complementary"
+                    <div class="relative flex pt-4 mt-4 border-t border-gray-200 lg:mt-0 lg:pt-0 lg:border-t-0 lg:ml-auto lg:justify-end social-links" role="complementary"
                         aria-label="<?php esc_attr_e( 'Social Media Links', 'textdomain' ); ?>">
                         <a href="https://www.facebook.com/GDaily.org/" target="_blank" rel="noopener noreferrer"
                             aria-label="<?php esc_attr_e( 'Visit our Facebook page', 'textdomain' ); ?>">
@@ -209,6 +223,19 @@
                 mobileMenu.classList.toggle('active');
                 menuToggle.classList.toggle('active');
                 menuToggle.setAttribute('aria-expanded', !isExpanded);
+                
+                // 防止背景滾動但保持頁面寬度
+                if (mobileMenu.classList.contains('active')) {
+                    // 計算滾動條寬度
+                    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+                    document.documentElement.style.setProperty('--scrollbar-width', scrollbarWidth + 'px');
+                    document.body.classList.add('menu-open');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.classList.remove('menu-open');
+                    document.body.style.overflow = '';
+                    document.documentElement.style.removeProperty('--scrollbar-width');
+                }
             }
         }
 
@@ -218,6 +245,34 @@
             if (menuButton) {
                 menuButton.addEventListener('click', toggleMobileMenu);
             }
+
+            // 點擊外部關閉選單
+            document.addEventListener('click', function(event) {
+                const mobileMenu = document.querySelector('.mobile-menu');
+                const menuToggle = document.querySelector('.menu-toggle');
+                const nav = document.querySelector('.primary-navigation');
+                
+                if (mobileMenu && menuToggle && 
+                    mobileMenu.classList.contains('active') && 
+                    !nav.contains(event.target)) {
+                    toggleMobileMenu();
+                }
+            });
+
+            // 桌面端自動關閉移動選單
+            window.addEventListener('resize', function() {
+                const mobileMenu = document.querySelector('.mobile-menu');
+                const menuToggle = document.querySelector('.menu-toggle');
+                
+                if (window.innerWidth >= 1024 && mobileMenu && menuToggle) {
+                    mobileMenu.classList.remove('active');
+                    menuToggle.classList.remove('active');
+                    menuToggle.setAttribute('aria-expanded', 'false');
+                    document.body.classList.remove('menu-open');
+                    document.body.style.overflow = '';
+                    document.documentElement.style.removeProperty('--scrollbar-width');
+                }
+            });
         });
         </script>
     </header>

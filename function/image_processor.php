@@ -38,9 +38,21 @@
  */
 function trimImageWhitespace($imagePath, $bgColor = [255, 255, 255], $tolerance = 10)
 {
+    // 檢查 GD 擴展是否已啟用
+    if (!extension_loaded('gd')) {
+        error_log("GD 擴展未啟用，使用預設值。路徑: " . $imagePath);
+        return 192; // 返回預設值
+    }
+
+    // 檢查必要的 GD 函數是否存在
+    if (!function_exists('imagecreatefromjpeg') || !function_exists('imagecreatefrompng') || !function_exists('imagecreatefromgif')) {
+        error_log("GD 擴展缺少必要的圖片處理函數，使用預設值。路徑: " . $imagePath);
+        return 192; // 返回預設值
+    }
+
     // 檢查圖片檔案是否存在
     if (!file_exists($imagePath)) {
-        error_log("圖片檔案不存在: " . $imagePath);
+        error_log("圖片檔案不存在，使用預設值。路徑: " . $imagePath);
         return 192; // 返回預設值
     }
 
@@ -54,15 +66,22 @@ function trimImageWhitespace($imagePath, $bgColor = [255, 255, 255], $tolerance 
     $imageType = $imageInfo[2];
 
     // 根據圖片格式創建對應的 GD 圖片資源
+    $image = false;
     switch ($imageType) {
         case IMAGETYPE_JPEG:
-            $image = imagecreatefromjpeg($imagePath);
+            if (function_exists('imagecreatefromjpeg')) {
+                $image = @imagecreatefromjpeg($imagePath);
+            }
             break;
         case IMAGETYPE_PNG:
-            $image = imagecreatefrompng($imagePath);
+            if (function_exists('imagecreatefrompng')) {
+                $image = @imagecreatefrompng($imagePath);
+            }
             break;
         case IMAGETYPE_GIF:
-            $image = imagecreatefromgif($imagePath);
+            if (function_exists('imagecreatefromgif')) {
+                $image = @imagecreatefromgif($imagePath);
+            }
             break;
         default:
             error_log("不支援的圖片格式: " . $imagePath . " (類型: " . $imageType . ")");

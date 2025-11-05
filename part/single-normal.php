@@ -15,22 +15,22 @@
     </h1>
 
     <div class="mt-10 mx-5 md:mx-0">
-        <?php while ( have_posts() ) : the_post(); ?>
-        <div class="entry-content mx-auto max-w-4xl select-none text-lg leading-10 tracking-wider"
-            itemprop="articleBody">
-            <?php the_content(); ?>
-            <?php if ( $args['adsense_enable'] ) : ?>
+        <?php while (have_posts()) : the_post(); ?>
+            <div class="entry-content mx-auto max-w-4xl select-none text-lg leading-10 tracking-wider"
+                itemprop="articleBody">
+                <?php the_content(); ?>
+                <?php if ($args['adsense_enable']) : ?>
+                    <?php get_template_part('part/adsense/adsense_content'); ?>
+                <?php endif; ?>
+            </div>
 
-            <?php endif; ?>
-        </div>
+            <?php get_template_part('part/article-meta'); ?>
 
-        <?php get_template_part('part/article-meta'); ?>
-
-        <?php
-            if ( comments_open() || get_comments_number() ) :
+            <?php
+            if (comments_open() || get_comments_number()) :
                 comments_template();
             endif;
-        ?>
+            ?>
         <?php endwhile; ?>
     </div>
 

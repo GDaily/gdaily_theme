@@ -2,14 +2,15 @@ article {
   @apply mx-10;
 }
 
-article >,
-.entry-content > * {
+article>,
+.entry-content>* {
   @apply mx-auto max-w-content;
 }
 
 .entry-content,
 .block-editor-block-list__layout {
   @apply mx-auto max-w-content no-copy;
+
   h1 {
     @apply text-2xl;
   }
@@ -35,6 +36,7 @@ article >,
     @apply select-text;
     /*   @apply px-2 py-1 font-bold text-red-400 bg-gray-100 rounded select-text; */
   }
+
   blockquote {
     @apply relative block p-4 my-5 text-base leading-tight text-gray-600 break-words bg-white border-l-8 pl-11 border-sky-200;
   }
@@ -42,6 +44,7 @@ article >,
   img {
     @apply object-contain max-w-full max-h-full mx-auto;
   }
+
   table {
     @apply w-full border border-collapse border-gray-300 table-auto;
 
@@ -53,6 +56,7 @@ article >,
     td {
       @apply px-4 py-2 border border-gray-300;
     }
+
     a {
       @apply font-extrabold no-underline text-sky-600;
     }
@@ -94,6 +98,7 @@ article >,
 
   button {
     @apply inline-flex items-center px-5 py-1 mx-2 text-base font-extrabold text-center text-white rounded-lg bg-sky-300 hover:bg-sky-400 focus:ring-4 focus:outline-none focus:ring-blue-300;
+
     a {
       @apply text-white;
     }
@@ -118,10 +123,12 @@ article >,
 ::-webkit-scrollbar-track {
   background-color: #f5f5f5;
 }
+
 ::-webkit-scrollbar {
   width: 12px;
   background-color: #f5f5f5;
 }
+
 ::-webkit-scrollbar-thumb {
   cursor: pointer;
   background-color: #b9e8eb;
@@ -157,17 +164,68 @@ article >,
   @apply inline-block;
 }
 
+
 code {
   background: #2b2451;
-  display: block;
-  padding: 40px 15px 15px 15px; /* 預留上方空間放按鈕 */
+  display: inline-block;
+  padding: 0px 10px;
+  border-radius: 5px;
+  color: white;
+  font-family: monospace;
+  line-height: 1.6;
+  position: relative;
+}
+
+code {
+  background: #2b2451;
+  display: inline-block;
+  padding: 0px 10px;
+  border-radius: 5px;
+  color: white;
+  font-family: monospace;
+  line-height: 1.6;
+  position: relative;
+}
+
+/* hover 提示 (桌面端顯示) */
+@media (hover: hover) {
+  code::after {
+    content: "雙擊複製📋";
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+    font-size: 12px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-100%);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+    white-space: nowrap;
+  }
+
+  code:hover::after {
+    opacity: 1;
+    transform: translateY(-120%);
+  }
+}
+
+code.multiline {
+  background: #2b2451;
+  display: inline-block;
+  padding: 30px 15px 15px 15px;
+
+  /* 預留上方空間放按鈕 */
   border-radius: 10px;
   color: white;
-  position: relative; /* 讓偽元素能定位 */
+  position: relative;
+  /* 讓偽元素能定位 */
   font-family: monospace;
 }
 
-code::before {
+code.multiline::before {
   content: "";
   position: absolute;
   top: 12px;
@@ -175,6 +233,8 @@ code::before {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  background: #ff5f57; /* 紅色 */
-  box-shadow: 20px 0 #ffbd2e, 40px 0 #28c940; /* 黃 & 綠 */
+  background: #ff5f57;
+  /* 紅色 */
+  box-shadow: 20px 0 #ffbd2e, 40px 0 #28c940;
+  /* 黃 & 綠 */
 }

@@ -1,4 +1,4 @@
-<div class="block max-w-2xl mb-12  w-full overflow-hidden bg-white shadow-md rounded-xl max-w-[400px] mx-auto relative"
+<div class="block max-w-2xl max-h-[400px] mb-12  w-full overflow-hidden bg-white shadow-md rounded-xl max-w-[400px] mx-auto relative"
     style="background:rgb(,0.1);">
 
 
@@ -6,7 +6,7 @@
         data-ad-client="ca-pub-7349735987764759" data-ad-slot="6868654395"></ins>
 
     <script>
-    (adsbygoogle = window.adsbygoogle || []).push({});
+        (adsbygoogle = window.adsbygoogle || []).push({});
     </script>
 
 

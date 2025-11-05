@@ -4,9 +4,9 @@
 $cat_Id = $args['cat_Id'];
 $parent_id = $args['parent_id'];
 $is_parent = $args['is_parent'];
- 
- 
-if ($is_parent ) {
+
+
+if ($is_parent) {
     // 获取子分类
     $args = array(
         'child_of' => $cat_Id,
@@ -17,31 +17,87 @@ if ($is_parent ) {
 
     // 检查是否有子分类
     if (!empty($child_terms) && !is_wp_error($child_terms)) {
-        echo '<div class="flex items-center justify-center py-10">';
-        echo '<div class="flex overflow-x-auto scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">';
+        // 獲取當前分類資訊
+        $current_category = get_category($cat_Id);
+
+        // 精簡的麵包屑導航 (Home > 下拉選單)
+        echo '<ol class="flex items-center justify-center p-10 whitespace-nowrap">';
+        echo '<li class="flex mx-3 my-2 bg-white shadow rounded-xl whitespace-nowrap">';
+        echo '<a class="flex items-center justify-center px-3 py-2 text-sm font-bold text-gray-500 focus:outline-none " href="' . home_url() . '">';
+        echo '<svg class=" shrink-0  size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+        echo '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>';
+        echo '<polyline points="9 22 9 12 15 12 15 22"></polyline>';
+        echo '</svg>';
+        echo '<span class="ml-2 hidden md:inline">Home</span></a>';
+        echo '</li>';
+
+        echo '<svg class="md:mx-2 text-gray-400 shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+        echo '<path d="m9 18 6-6-6-6"></path>';
+        echo '</svg>';
+
+        // 下拉選單作為麵包屑的一部分
+        echo '<li class="flex mx-3 my-2 bg-white shadow rounded-xl whitespace-nowrap">';
+        echo '<div class="relative inline-block" id="custom-dropdown">';
+
+        // 自定義下拉按鈕 (顯示當前分類名稱)
+        echo '<button type="button" class="px-5 py-2 text-sm font-bold text-gray-500 focus:outline-none flex items-center" onclick="toggleDropdown()">';
+        echo '<span id="selected-text">' . esc_html($current_category->name) . '</span>';
+        echo '<svg class="w-4 h-4 text-gray-500 transition-transform duration-200 ml-2 flex-shrink-0" id="dropdown-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">';
+        echo '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"></path>';
+        echo '</svg>';
+        echo '</button>';
+
+        // 自定義下拉選項 (獨立寬度)
+        echo '<div id="dropdown-options" class="absolute top-full left-0 mt-1 bg-white shadow-xl rounded-xl border-2 border-gray-100 z-50 max-h-60 overflow-y-auto hidden min-w-[200px] whitespace-nowrap">';
         foreach ($child_terms as $child_term) {
-            echo '<button class="my-2 rounded-xl whitespace-nowrap  bg-white  flex mx-3 ">';
-            echo '<a href="' . esc_url(get_term_link($child_term)) . '" class="    px-5 py-3  text-gray-500 font-bold no-underline">' . esc_html($child_term->name) . '</a>';
-            echo '</button>';
+            echo '<a href="' . esc_url(get_term_link($child_term)) . '" class="block px-6 py-3 text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-800 transition-colors duration-150 first:rounded-t-xl last:rounded-b-xl font-medium">' . esc_html($child_term->name) . '</a>';
         }
         echo '</div>';
+
         echo '</div>';
+        echo '</li>';
+        echo '</ol>';
+
+        // JavaScript for dropdown functionality
+        echo '<script>
+        function toggleDropdown() {
+            const dropdown = document.getElementById("dropdown-options");
+            const arrow = document.getElementById("dropdown-arrow");
+            
+            if (dropdown.classList.contains("hidden")) {
+                dropdown.classList.remove("hidden");
+                arrow.style.transform = "rotate(180deg)";
+            } else {
+                dropdown.classList.add("hidden");
+                arrow.style.transform = "rotate(0deg)";
+            }
+        }
+        
+        // 點擊外部關閉下拉選單
+        document.addEventListener("click", function(event) {
+            const dropdown = document.getElementById("custom-dropdown");
+            if (dropdown && !dropdown.contains(event.target)) {
+                document.getElementById("dropdown-options").classList.add("hidden");
+                document.getElementById("dropdown-arrow").style.transform = "rotate(0deg)";
+            }
+        });
+        </script>';
     } else {
         echo '<p class="text-center text-gray-500">没有子分类。</p>';
     }
-} else {  
+} else {
     // 開始麵包屑導航
-    echo '<ol class="flex items-center whitespace-nowrap p-2  justify-center mb-5">';
-    echo '<li class="my-2 rounded-xl whitespace-nowrap bg-gray-100 mx-3 flex">';
-    echo '<a class="flex items-center text-sm text-gray-500   font-bold py-3 px-5  justify-center  focus:outline-none  " href="' . home_url() . '">';
-    echo '<svg class="shrink-0 me-3 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+    echo '<ol class="flex items-center justify-center p-10 whitespace-nowrap">';
+    echo '<li class="flex mx-3 my-2 bg-white shadow rounded-xl whitespace-nowrap">';
+    echo '<a class="flex items-center justify-center px-3 py-2 text-sm font-bold text-gray-500 focus:outline-none " href="' . home_url() . '">';
+    echo '<svg class="shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
     echo '<path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>';
     echo '<polyline points="9 22 9 12 15 12 15 22"></polyline>';
     echo '</svg>';
-    echo 'Home</a>';
+    echo '<span class="ml-2 hidden md:inline">Home</span></a>';
     echo '</li>';
 
-    echo '<svg class="shrink-0 mx-2 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+    echo '<svg class="md:mx-2 text-gray-400 shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
     echo '<path d="m9 18 6-6-6-6"></path>';
     echo '</svg>';
 
@@ -55,20 +111,20 @@ if ($is_parent ) {
             // 若有父分類，顯示父分類
             if ($parent_cat->parent != 0) {
                 $parent_category = get_category($parent_cat->parent);
-        
 
-                echo '<li class="my-2 rounded-xl whitespace-nowrap bg-gray-100 mx-3 flex ">';
-                echo '<a href="' . esc_url(get_category_link($parent_category->term_id)) . '" class="text-gray-500  py-3 px-5    font-bold no-underline">';
+
+                echo '<li class="flex mx-1 md:mx-3 my-2 bg-white shadow rounded-xl whitespace-nowrap ">';
+                echo '<a href="' . esc_url(get_category_link($parent_category->term_id)) . '" class="px-5 py-2 font-bold text-gray-500 no-underline">';
                 echo esc_html($parent_category->name);
                 echo '</a>';
                 echo '</li>';
-                echo '<svg class="shrink-0 mx-2 size-4 text-gray-400" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
+                echo '<svg class=" md:mx-2 text-gray-400 shrink-0 size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
                 echo '<path d="m9 18 6-6-6-6"></path>';
                 echo '</svg>';
             }
 
             // 當前分類
-            echo '<li class="my-2 rounded-xl whitespace-nowrap bg-gray-100 mx-3 flex text-gray-500 py-3 px-5    font-bold no-underline " aria-current="page">';
+            echo '<li class="flex px-5 py-2 mx-3 my-2 font-bold text-gray-500 no-underline bg-white shadow rounded-xl whitespace-nowrap " aria-current="page">';
             echo esc_html($parent_cat->name);
             echo '</li>';
         }
@@ -76,4 +132,3 @@ if ($is_parent ) {
 
     echo '</ol>';
 }
-?>

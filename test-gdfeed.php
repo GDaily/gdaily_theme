@@ -9,17 +9,6 @@
  * @subpackage theme
  */
 
-/**
- * Custom excerpt length for RSS feed
- */
-function rss_custom_excerpt($limit = 50)
-{
-    $excerpt = get_the_excerpt();
-    if (strlen($excerpt) > $limit) {
-        $excerpt = mb_substr($excerpt, 0, $limit, 'UTF-8') . '...';
-    }
-    return $excerpt;
-}
 
 /**
  * Get related posts.
@@ -69,15 +58,19 @@ function my_rss_related()
 header('Content-Type: ' . feed_content_type('rss-http') . '; charset=' . get_option('blog_charset'), true);
 $frequency  = 1;        // Default '1'. The frequency of RSS updates within the update period.
 $duration   = 'hourly'; // Default 'hourly'. Accepts 'hourly', 'daily', 'weekly', 'monthly', 'yearly'.
+$postlink   = '<br /><a href="' . get_permalink() . '">See the rest of the story at mysite.com</a><br /><br />';
+$postimages = wp_get_attachment_image_src(get_post_thumbnail_id(get_the_ID()), 'large');
 
-// 首先嘗試簡單查詢
-$rss_posts = get_posts(array(
-    'numberposts' => 10,
-    'post_status' => 'publish',
-    'category__not_in' => array(1661, 1779),
-    'orderby' => 'date',
-    'order' => 'DESC'
-));
+// Check for images
+if ($postimages) {
+
+    // Get featured image
+    $postimage = $postimages[0];
+} else {
+
+    // Fallback to a default
+    $postimage = get_stylesheet_directory_uri() . '/images/default.jpg';
+}
 
 
 /**
@@ -115,47 +108,25 @@ echo '<?xml version="1.0" encoding="' . get_option('blog_charset') . '"?' . '>';
         <?php do_action('rss2_head'); ?>
 
         <!-- Start loop -->
-        <?php if (!empty($rss_posts)) : foreach ($rss_posts as $post) : setup_postdata($post);
+        <?php while (have_posts()) : the_post(); ?>
 
-                // 為每篇文章獲取對應的特色圖片
-                $permalink = get_permalink();
-                $postlink = '<br /><a href="' . $permalink . '">點此閱讀完整文章</a><br /><br />';
-                $postimages = wp_get_attachment_image_src(get_post_thumbnail_id(get_the_ID()), 'large');
+        <item>
+            <title><?php the_title_rss(); ?></title>
+            <link><?php the_permalink_rss(); ?></link>
+            <guid isPermaLink="false"><?php the_guid(); ?></guid>
+            <author><?php the_author(); ?></author>
+            <image>
+                <url><?php echo esc_url($postimage); ?>"/></url>
+            </image>
+            <pubDate><?php echo mysql2date('D, d M Y H:i:s +0000', get_post_time('Y-m-d H:i:s', true), false); ?>
+            </pubDate>
+            <content:encoded>
+                <![CDATA[<?php echo the_excerpt_rss();
+                                echo $postlink;
+                                echo my_rss_related(); ?>]]>
+            </content:encoded>
+        </item>
 
-                // 檢查是否有特色圖片
-                if ($postimages) {
-                    // 使用文章的特色圖片
-                    $postimage = $postimages[0];
-                } else {
-                    // 如果沒有特色圖片，使用預設圖片
-                    $postimage = get_stylesheet_directory_uri() . '/images/default.jpg';
-                }
-        ?>
-
-                <item>
-                    <title><?php the_title_rss(); ?></title>
-                    <link><?php echo esc_url($permalink); ?></link>
-                    <guid isPermaLink="true"><?php echo esc_url($permalink); ?></guid>
-                    <author><?php the_author(); ?></author>
-                    <image>
-                        <url><?php echo esc_url($postimage); ?></url>
-                    </image>
-                    <pubDate><?php echo mysql2date('D, d M Y H:i:s +0000', get_post_time('Y-m-d H:i:s', true), false); ?>
-                    </pubDate>
-                    <description>
-                        <![CDATA[<?php echo rss_custom_excerpt(100); ?>]]>
-                    </description>
-                    <content:encoded>
-                        <![CDATA[<?php
-                                    // 只顯示摘要，限制字數
-                                    echo rss_custom_excerpt(200);
-                                    echo $postlink;
-                                    ?>]]>
-                    </content:encoded>
-                </item>
-
-        <?php endforeach;
-            wp_reset_postdata();
-        endif; ?>
+        <?php endwhile; ?>
     </channel>
 </rss>

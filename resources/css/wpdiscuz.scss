@@ -1,0 +1,86 @@
+/* WPDiscuz 留言系統樣式 */
+
+.comments-area {
+    width: auto !important;
+}
+
+#wpdcom {
+    max-width: none !important;
+}
+
+/* 留言標題元素 */
+.wpd-comment-header,
+.wpd-comment-author,
+.wpd-comment-date,
+.wpd-comment-status,
+.wpd-reply-to {
+    display: inline-block !important;
+}
+
+/* 社交登入圖標 */
+.wpd-social-login svg {
+    margin: 0 5px !important;
+    cursor: pointer !important;
+}
+
+/* 登入按鈕 */
+.wpdiscuz-login-button {
+    margin: 0 10px !important;
+}
+
+/* 社交登入按鈕樣式 */
+[wpd-tooltip="Google"],
+[wpd-tooltip="Telegram"] {
+    padding: 3px 9px !important;
+    border-radius: 8px !important;
+    color: #ffffff !important;
+    cursor: pointer !important;
+    display: inline-flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+}
+
+[wpd-tooltip="Google"] {
+    background: #ffa1a1 !important;
+}
+
+[wpd-tooltip="Telegram"] {
+    background: #95d5de !important;
+}
+
+/* 提示文字樣式 */
+[wpd-tooltip="Google"]::before,
+[wpd-tooltip="Telegram"]::before {
+    content: attr(wpd-tooltip) !important;
+    position: static !important;
+    transform: none !important;
+    border: none !important;
+    z-index: 100 !important;
+    opacity: 1 !important;
+    font-size: .6rem !important;
+}
+
+[wpd-tooltip="Google"]::after,
+[wpd-tooltip="Telegram"]::after {
+    display: none !important;
+}
+
+/* 表單標題 */
+#wpdcom .wpd-form-head {
+    border-bottom: 0px !important;
+}
+
+/* 文字輸入區域 */
+#wpdcom .wpd-form .wpdiscuz-textarea-wrap {
+    padding-top: 0 !important;
+}
+
+/* 留言包裝容器 */
+#wpdcom .wpd-comment .wpd-comment-wrap {
+    padding-top: 10px !important;
+}
+
+/* 置頂留言背景 */
+.wpdiscuz_sticky {
+    background: #e6fdff !important;
+}

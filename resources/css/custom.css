@@ -16,7 +16,7 @@ article>,
   }
 
   h2 {
-    @apply text-xl;
+    @apply py-3 mt-32 mb-10 text-2xl font-extrabold text-center rounded-md text-sky-600 bg-sky-100;
   }
 
   h3 {

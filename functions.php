@@ -29,15 +29,16 @@ require_once get_template_directory() . '/function/seoMeta.php';
 /*  短代碼 */
 require_once get_template_directory() . '/function/url_short_code.php';
 
+/*  文章搜尋優化 */
+require_once get_template_directory() . '/function/re_search.php';
+
 
 
 /*  初始化，運行一次 */
 
 require_once get_template_directory() . '/once/migrate-app-name-meta.php';
 require_once get_template_directory() . '/once/add-tailwind_color.php';
-
- 
-
+require_once get_template_directory() . '/once/convert-h3-to-h2-batch.php';
 
 /**
  * Theme setup.
@@ -96,7 +97,7 @@ function tailpress_enqueue_scripts()
 
 
     // 載入本地 alpinejs
-    add_action('wp_enqueue_scripts', function() {
+    add_action('wp_enqueue_scripts', function () {
         wp_enqueue_script(
             'alpinejs',
             get_template_directory_uri() . '/source/js/alpinejs.min.js',
@@ -211,13 +212,7 @@ add_filter('intermediate_image_sizes', function ($sizes) {
 });
 
 
-/** 刪除 Yoast標籤 */
 
-add_action('wp_head', function () {
-    ob_start(function ($o) {
-        return preg_replace('/^\n?<!--.*?[Y]oast.*?-->\n?$/mi', '', $o);
-    });
-}, ~PHP_INT_MAX);
 
 /** delete url */
 function crunchify_disable_comment_url($fields)
@@ -282,32 +277,105 @@ function no_self_ping(&$links)
 
 add_action('pre_ping', 'no_self_ping');
 
+/* === 安全防護措施 === */
 
-
-/* 限制 REST API：前台未登入用戶禁止存取 */
-add_filter('rest_authentication_errors', function ($result) {
-    // 如果之前已驗證，則不處理
-    if (true === $result || is_wp_error($result)) {
-        return $result;
+// 隱藏 WordPress 版本號
+remove_action('wp_head', 'wp_generator');
+function remove_version_strings($src)
+{
+    global $wp_version;
+    parse_str(parse_url($src, PHP_URL_QUERY), $query);
+    if (!empty($query['ver']) && $query['ver'] === $wp_version) {
+        $src = remove_query_arg('ver', $src);
     }
+    return $src;
+}
+add_filter('script_loader_src', 'remove_version_strings');
+add_filter('style_loader_src', 'remove_version_strings');
 
-    // 後台請求 (含 AJAX) 不限制
-    if (is_admin()) {
-        return $result;
+// 禁用文件編輯
+define('DISALLOW_FILE_EDIT', true);
+
+// 移除不必要的 meta 標籤
+remove_action('wp_head', 'wp_shortlink_wp_head');
+remove_action('wp_head', 'wlwmanifest_link');
+remove_action('wp_head', 'rsd_link');
+remove_action('wp_head', 'adjacent_posts_rel_link_wp_head');
+
+// 禁用 WordPress Emojis
+function disable_emojis()
+{
+    remove_action('wp_head', 'print_emoji_detection_script', 7);
+    remove_action('admin_print_scripts', 'print_emoji_detection_script');
+    remove_action('wp_print_styles', 'print_emoji_styles');
+    remove_action('admin_print_styles', 'print_emoji_styles');
+    remove_filter('the_content_feed', 'wp_staticize_emoji');
+    remove_filter('comment_text_rss', 'wp_staticize_emoji');
+    remove_filter('wp_mail', 'wp_staticize_emoji_for_email');
+}
+add_action('init', 'disable_emojis');
+
+// 移除 Gutenberg 前端 CSS
+function remove_gutenberg_styles()
+{
+    wp_dequeue_style('wp-block-library');
+    wp_dequeue_style('wp-block-library-theme');
+    wp_dequeue_style('wc-blocks-style');
+    wp_dequeue_style('global-styles');
+}
+add_action('wp_enqueue_scripts', 'remove_gutenberg_styles', 100);
+
+// 禁用 WordPress 心跳 API（減少伺服器負載）
+function stop_heartbeat()
+{
+    wp_deregister_script('heartbeat');
+}
+add_action('init', 'stop_heartbeat', 1);
+
+// 限制修訂版本數量
+if (!defined('WP_POST_REVISIONS')) {
+    define('WP_POST_REVISIONS', 3);
+}
+
+// 禁用作者頁面（防止用戶名洩露）
+function disable_author_page()
+{
+    global $wp_query;
+    if (is_author()) {
+        $wp_query->set_404();
+        status_header(404);
     }
+}
+add_action('wp', 'disable_author_page');
 
-    // 如果使用者未登入且在前台，禁止存取
-    if (!is_user_logged_in()) {
-        return new WP_Error(
-            'rest_not_allowed',
-            __('You are not allowed to access the REST API.'),
-            array('status' => 403)
-        );
-    }
+// 移除 WordPress 註釋中的版本信息
+function remove_html_comments($content)
+{
+    return preg_replace('/<!--(.|\s)*?-->/', '', $content);
+}
+add_filter('the_content', 'remove_html_comments');
 
-    // 其他情況允許
-    return $result;
-});
+// 禁用 XML-RPC pingbacks
+function filter_xmlrpc_methods($methods)
+{
+    unset($methods['pingback.ping']);
+    unset($methods['pingback.extensions.getPingbacks']);
+    return $methods;
+}
+add_filter('xmlrpc_methods', 'filter_xmlrpc_methods');
+
+// 安全標頭
+function add_security_headers()
+{
+    header('X-Content-Type-Options: nosniff');
+    header('X-Frame-Options: SAMEORIGIN');
+    header('X-XSS-Protection: 1; mode=block');
+    header('Referrer-Policy: strict-origin-when-cross-origin');
+}
+add_action('send_headers', 'add_security_headers');
+
+
+
 
 
 
@@ -315,16 +383,45 @@ add_filter('rest_authentication_errors', function ($result) {
 
 /*自訂Feed*/
 
-add_action('init', 'customRSS');
+// 優先註冊自訂 feed，確保在其他 hook 之前執行
+add_action('init', 'customRSS', 5);
 function customRSS()
 {
     add_feed('gdfeed', 'customRSSFunc');
+
+    // 強制刷新重寫規則（僅在開發時使用）
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        flush_rewrite_rules();
+    }
 }
 
 function customRSSFunc()
 {
-    get_template_part('rss', 'gdfeed');
+    // 確保這是 gdfeed 請求
+    global $wp_query;
+    if (isset($wp_query->query_vars['feed']) && $wp_query->query_vars['feed'] === 'gdfeed') {
+        // 載入自訂 RSS 模板
+        $template = locate_template('rss-gdfeed.php');
+        if ($template) {
+            load_template($template);
+        } else {
+            // 如果找不到模板檔案，直接包含
+            include get_template_directory() . '/rss-gdfeed.php';
+        }
+        exit; // 確保不會繼續執行其他程式碼
+    }
 }
+
+// 主題啟用時刷新重寫規則
+function gd_theme_activation()
+{
+    // 註冊自訂 feed
+    add_feed('gdfeed', 'customRSSFunc');
+    // 刷新重寫規則
+    flush_rewrite_rules();
+}
+add_action('after_switch_theme', 'gd_theme_activation');
+
 /*自訂Feed*/
 
 
@@ -333,6 +430,13 @@ function customRSSFunc()
 
 function disable_official_feed()
 {
+    global $wp_query;
+
+    // 允許自訂的 gdfeed 通過
+    if (isset($wp_query->query_vars['feed']) && $wp_query->query_vars['feed'] === 'gdfeed') {
+        return;
+    }
+
     wp_die(__('No feed available, please visit the <a href="' . esc_url(home_url('/')) . '">homepage</a>!'));
 }
 
@@ -349,5 +453,10 @@ remove_action('wp_head', 'feed_links', 2);
 
 
 /*禁用官方Feed*/
-
- 
+function load_jquery_for_wpdiscuz()
+{
+    if (function_exists('wpdiscuz') && is_single()) {
+        wp_enqueue_script('jquery');
+    }
+}
+add_action('wp_footer', 'load_jquery_for_wpdiscuz');

@@ -16,12 +16,11 @@ article>,
   }
 
   h2 {
-    @apply py-3 mt-32 mb-10 text-2xl font-extrabold text-center rounded-md text-sky-600 bg-sky-100;
+    @apply py-3 mt-32 mb-10 text-2xl font-extrabold rounded-md text-sky-600 bg-sky-100;
+    text-align: center;
   }
 
-  h3 {
-    @apply py-3 mt-32 mb-10 text-2xl font-extrabold text-center rounded-md text-sky-600 bg-sky-100;
-  }
+
 
   h4 {
     @apply text-xl font-extrabold text-sky-400;
@@ -46,7 +45,7 @@ article>,
   }
 
   table {
-    @apply w-full border border-collapse border-gray-300 table-auto;
+    @apply block w-full overflow-x-auto overflow-y-hidden whitespace-normal border border-collapse border-gray-300 table-auto md:table md:overflow-x-visible md:overflow-y-auto;
 
     thead th {
       @apply bg-gray-100;
@@ -54,12 +53,18 @@ article>,
 
     th,
     td {
-      @apply px-4 py-2 border border-gray-300;
+      @apply px-4 py-2 border border-gray-300 min-w-[100px] break-words;
     }
 
     a {
-      @apply font-extrabold no-underline text-sky-600;
+      @apply font-bold no-underline text-sky-600;
     }
+  }
+
+  /* 為表格容器添加外層包裝樣式，支持水平滾動 */
+  .entry-content table,
+  .block-editor-block-list__layout table {
+    @apply rounded-lg;
   }
 
   ol,
@@ -174,6 +179,9 @@ code {
   font-family: monospace;
   line-height: 1.6;
   position: relative;
+  /* 自動換行 */
+  word-break: break-all;
+
 }
 
 code {

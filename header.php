@@ -7,134 +7,158 @@
     <meta http-equiv="x-ua-compatible" content="ie=edge">
     <link rel="profile" href="http://gmpg.org/xfn/11">
     <link rel="pingback" href="<?php bloginfo('pingback_url'); ?>">
+
+    <?php if (is_front_page()) { ?>
+        <!-- 預加載首頁背景圖片以提升載入速度 -->
+        <link rel="preload" as="image" href="<?php echo get_template_directory_uri(); ?>/source/img/beams.webp"
+            fetchpriority="high">
+    <?php } ?>
+
     <?php wp_head(); ?>
+
+
+<!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-T57HHHP');</script>
+<!-- End Google Tag Manager -->
+
+
 </head>
 
 <body <?php body_class('bg-white text-gray-900 antialiased'); ?>>
+
+<!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-T57HHHP"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
     <?php wp_body_open(); ?>
     <?php do_action('tailpress_site_before'); ?>
     <?php do_action('tailpress_header'); ?>
 
     <header role="banner" class="site-header">
         <style>
-        .scroll-hidden::-webkit-scrollbar {
-            height: 0px;
-            background: transparent;
-        }
+            .scroll-hidden::-webkit-scrollbar {
+                height: 0px;
+                background: transparent;
+            }
 
-        /* 移除列表默认样式 */
-        .main-navigation-links {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
+            /* 移除列表默认样式 */
+            .main-navigation-links {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
 
-        .main-navigation-links li {
-            list-style: none;
-            margin: 0;
-            padding: 0;
-        }
+            .main-navigation-links li {
+                list-style: none;
+                margin: 0;
+                padding: 0;
+            }
 
-        /* 移动端菜单样式 */
-        .mobile-menu {
-            display: none;
-        }
-
-        .mobile-menu.active {
-            display: block;
-        }
-
-        /* 桌面端显示菜单 */
-        @media (min-width: 1024px) {
+            /* 移动端菜单样式 */
             .mobile-menu {
-                display: flex !important;
+                display: none;
             }
-        }
 
-        .menu-toggle {
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
+            .mobile-menu.active {
+                display: block;
+            }
 
-        .hamburger-icon {
-            display: block;
-        }
+            /* 桌面端显示菜单 */
+            @media (min-width: 1024px) {
+                .mobile-menu {
+                    display: flex !important;
+                }
+            }
 
-        .close-icon {
-            display: none;
-        }
-
-        .menu-toggle.active .hamburger-icon {
-            display: none;
-        }
-
-        .menu-toggle.active .close-icon {
-            display: block;
-        }
-
-        /* 確保選單按鈕在手機端右側對齊 */
-        @media (max-width: 1023px) {
             .menu-toggle {
-                margin-left: auto;
+                cursor: pointer;
+                transition: all 0.3s ease;
             }
-        }
 
-        /* 防止選單打開時頁面寬度變化 */
-        body.menu-open {
-            padding-right: var(--scrollbar-width, 0px);
-        }
+            .hamburger-icon {
+                display: block;
+            }
 
-        /* 跳过链接 - 辅助功能 */
-        .skip-link {
-            position: absolute;
-            left: -9999px;
-            z-index: 999999999;
-            padding: 8px 16px;
-            background: #000;
-            color: #fff;
-            text-decoration: none;
-        }
+            .close-icon {
+                display: none;
+            }
 
-        .skip-link:focus {
-            left: 6px;
-            top: 7px;
-        }
+            .menu-toggle.active .hamburger-icon {
+                display: none;
+            }
 
-        /* 搜尋表單樣式 */
-        .search-form-container {
-            transform: translateY(-10px);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            display: block;
-        }
+            .menu-toggle.active .close-icon {
+                display: block;
+            }
 
-        .search-form-container.active {
-            transform: translateY(0);
-            opacity: 1;
-            visibility: visible;
-        }
+            /* 確保選單按鈕在手機端右側對齊 */
+            @media (max-width: 1023px) {
+                .menu-toggle {
+                    margin-left: auto;
+                }
+            }
 
-        .search-toggle {
-            transition: all 0.2s ease;
-        }
+            /* 防止選單打開時頁面寬度變化 */
+            body.menu-open {
+                padding-right: var(--scrollbar-width, 0px);
+            }
 
-        .search-toggle:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
+            /* 跳过链接 - 辅助功能 */
+            .skip-link {
+                position: absolute;
+                left: -9999px;
+                z-index: 999999999;
+                padding: 8px 16px;
+                background: #000;
+                color: #fff;
+                text-decoration: none;
+            }
 
-        .search-toggle.active {
-            background-color: rgba(59, 130, 246, 0.1);
-            color: #3b82f6;
-        }
+            .skip-link:focus {
+                left: 6px;
+                top: 7px;
+            }
 
-        /* 響應式搜尋 */
-        @media (max-width: 640px) {
+            /* 搜尋表單樣式 */
             .search-form-container {
-                width: calc(100vw - 48px);
-                right: -12px;
+                transform: translateY(-10px);
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s ease;
+                display: block;
             }
-        }
+
+            .search-form-container.active {
+                transform: translateY(0);
+                opacity: 1;
+                visibility: visible;
+            }
+
+            .search-toggle {
+                transition: all 0.2s ease;
+            }
+
+            .search-toggle:hover {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+
+            .search-toggle.active {
+                background-color: rgba(59, 130, 246, 0.1);
+                color: #3b82f6;
+            }
+
+            /* 響應式搜尋 */
+            @media (max-width: 640px) {
+                .search-form-container {
+                    width: calc(100vw - 48px);
+                    right: -12px;
+                }
+            }
         </style>
 
         <!-- 辅助功能跳过链接 -->
@@ -379,151 +403,151 @@
         </nav>
 
         <script>
-        function toggleMobileMenu() {
-            const mobileMenu = document.querySelector('.mobile-menu');
-            const menuToggle = document.querySelector('.menu-toggle');
+            function toggleMobileMenu() {
+                const mobileMenu = document.querySelector('.mobile-menu');
+                const menuToggle = document.querySelector('.menu-toggle');
 
-            if (mobileMenu && menuToggle) {
-                const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+                if (mobileMenu && menuToggle) {
+                    const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
 
-                mobileMenu.classList.toggle('active');
-                menuToggle.classList.toggle('active');
-                menuToggle.setAttribute('aria-expanded', !isExpanded);
+                    mobileMenu.classList.toggle('active');
+                    menuToggle.classList.toggle('active');
+                    menuToggle.setAttribute('aria-expanded', !isExpanded);
 
-                // 防止背景滾動但保持頁面寬度
-                if (mobileMenu.classList.contains('active')) {
-                    // 計算滾動條寬度
-                    const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
-                    document.documentElement.style.setProperty('--scrollbar-width', scrollbarWidth + 'px');
-                    document.body.classList.add('menu-open');
-                    document.body.style.overflow = 'hidden';
-                } else {
-                    document.body.classList.remove('menu-open');
-                    document.body.style.overflow = '';
-                    document.documentElement.style.removeProperty('--scrollbar-width');
-                }
-            }
-        }
-
-        // 确保DOM加载完成后绑定事件
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuButton = document.querySelector('.menu-toggle');
-            if (menuButton) {
-                menuButton.addEventListener('click', toggleMobileMenu);
-            }
-
-            // 搜尋功能
-            function toggleSearchForm() {
-                const searchToggle = document.querySelector('.search-toggle');
-                const searchForm = document.querySelector('.search-form-container');
-                const searchInput = document.querySelector('#search-input');
-
-                if (searchToggle && searchForm) {
-                    const isActive = searchForm.classList.contains('active');
-
-                    if (!isActive) {
-                        searchForm.classList.add('active');
-                        searchToggle.classList.add('active');
-                        searchToggle.setAttribute('aria-expanded', 'true');
-                        // 聚焦到搜尋輸入框
-                        setTimeout(() => {
-                            if (searchInput) {
-                                searchInput.focus();
-                            }
-                        }, 300);
+                    // 防止背景滾動但保持頁面寬度
+                    if (mobileMenu.classList.contains('active')) {
+                        // 計算滾動條寬度
+                        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+                        document.documentElement.style.setProperty('--scrollbar-width', scrollbarWidth + 'px');
+                        document.body.classList.add('menu-open');
+                        document.body.style.overflow = 'hidden';
                     } else {
-                        searchForm.classList.remove('active');
-                        searchToggle.classList.remove('active');
-                        searchToggle.setAttribute('aria-expanded', 'false');
+                        document.body.classList.remove('menu-open');
+                        document.body.style.overflow = '';
+                        document.documentElement.style.removeProperty('--scrollbar-width');
                     }
                 }
             }
 
-            const searchButton = document.querySelector('.search-toggle');
-            if (searchButton) {
-                searchButton.addEventListener('click', toggleSearchForm);
-            }
-
-            // 點擊外部關閉搜尋表單
-            document.addEventListener('click', function(event) {
-                const searchForm = document.querySelector('.search-form-container');
-                const searchToggle = document.querySelector('.search-toggle');
-                const searchContainer = searchToggle?.parentElement;
-
-                if (searchForm && searchToggle &&
-                    searchForm.classList.contains('active') &&
-                    !searchContainer?.contains(event.target)) {
-                    toggleSearchForm();
+            // 确保DOM加载完成后绑定事件
+            document.addEventListener('DOMContentLoaded', function() {
+                const menuButton = document.querySelector('.menu-toggle');
+                if (menuButton) {
+                    menuButton.addEventListener('click', toggleMobileMenu);
                 }
-            });
 
-            // ESC鍵關閉搜尋表單
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
+                // 搜尋功能
+                function toggleSearchForm() {
+                    const searchToggle = document.querySelector('.search-toggle');
                     const searchForm = document.querySelector('.search-form-container');
-                    if (searchForm && searchForm.classList.contains('active')) {
+                    const searchInput = document.querySelector('#search-input');
+
+                    if (searchToggle && searchForm) {
+                        const isActive = searchForm.classList.contains('active');
+
+                        if (!isActive) {
+                            searchForm.classList.add('active');
+                            searchToggle.classList.add('active');
+                            searchToggle.setAttribute('aria-expanded', 'true');
+                            // 聚焦到搜尋輸入框
+                            setTimeout(() => {
+                                if (searchInput) {
+                                    searchInput.focus();
+                                }
+                            }, 300);
+                        } else {
+                            searchForm.classList.remove('active');
+                            searchToggle.classList.remove('active');
+                            searchToggle.setAttribute('aria-expanded', 'false');
+                        }
+                    }
+                }
+
+                const searchButton = document.querySelector('.search-toggle');
+                if (searchButton) {
+                    searchButton.addEventListener('click', toggleSearchForm);
+                }
+
+                // 點擊外部關閉搜尋表單
+                document.addEventListener('click', function(event) {
+                    const searchForm = document.querySelector('.search-form-container');
+                    const searchToggle = document.querySelector('.search-toggle');
+                    const searchContainer = searchToggle?.parentElement;
+
+                    if (searchForm && searchToggle &&
+                        searchForm.classList.contains('active') &&
+                        !searchContainer?.contains(event.target)) {
                         toggleSearchForm();
                     }
+                });
+
+                // ESC鍵關閉搜尋表單
+                document.addEventListener('keydown', function(event) {
+                    if (event.key === 'Escape') {
+                        const searchForm = document.querySelector('.search-form-container');
+                        if (searchForm && searchForm.classList.contains('active')) {
+                            toggleSearchForm();
+                        }
+                    }
+                });
+
+                // 點擊外部關閉選單
+                document.addEventListener('click', function(event) {
+                    const mobileMenu = document.querySelector('.mobile-menu');
+                    const menuToggle = document.querySelector('.menu-toggle');
+                    const nav = document.querySelector('.primary-navigation');
+
+                    if (mobileMenu && menuToggle &&
+                        mobileMenu.classList.contains('active') &&
+                        !nav.contains(event.target)) {
+                        toggleMobileMenu();
+                    }
+                });
+
+                // 桌面端自動關閉移動選單
+                window.addEventListener('resize', function() {
+                    const mobileMenu = document.querySelector('.mobile-menu');
+                    const menuToggle = document.querySelector('.menu-toggle');
+
+                    if (window.innerWidth >= 1024 && mobileMenu && menuToggle) {
+                        mobileMenu.classList.remove('active');
+                        menuToggle.classList.remove('active');
+                        menuToggle.setAttribute('aria-expanded', 'false');
+                        document.body.classList.remove('menu-open');
+                        document.body.style.overflow = '';
+                        document.documentElement.style.removeProperty('--scrollbar-width');
+                    }
+                });
+
+                // 搜索分析追蹤 (Google Analytics)
+                function trackSearchEvent(query) {
+                    if (typeof gtag !== 'undefined') {
+                        gtag('event', 'search', {
+                            search_term: query,
+                            event_category: 'engagement',
+                            event_label: 'site_search'
+                        });
+                    }
                 }
+
+                // 提交搜索時追蹤
+                document.querySelector('.search-form')?.addEventListener('submit', function(e) {
+                    const searchInput = document.querySelector('#search-input');
+                    const query = searchInput?.value.trim();
+                    if (query) {
+                        trackSearchEvent(query);
+                    }
+                });
+
+                // 移動端搜索表單追蹤
+                document.querySelector('.mobile-search-form')?.addEventListener('submit', function(e) {
+                    const mobileSearchInput = this.querySelector('input[name="gs"]');
+                    const query = mobileSearchInput?.value.trim();
+                    if (query) {
+                        trackSearchEvent(query);
+                    }
+                });
             });
-
-            // 點擊外部關閉選單
-            document.addEventListener('click', function(event) {
-                const mobileMenu = document.querySelector('.mobile-menu');
-                const menuToggle = document.querySelector('.menu-toggle');
-                const nav = document.querySelector('.primary-navigation');
-
-                if (mobileMenu && menuToggle &&
-                    mobileMenu.classList.contains('active') &&
-                    !nav.contains(event.target)) {
-                    toggleMobileMenu();
-                }
-            });
-
-            // 桌面端自動關閉移動選單
-            window.addEventListener('resize', function() {
-                const mobileMenu = document.querySelector('.mobile-menu');
-                const menuToggle = document.querySelector('.menu-toggle');
-
-                if (window.innerWidth >= 1024 && mobileMenu && menuToggle) {
-                    mobileMenu.classList.remove('active');
-                    menuToggle.classList.remove('active');
-                    menuToggle.setAttribute('aria-expanded', 'false');
-                    document.body.classList.remove('menu-open');
-                    document.body.style.overflow = '';
-                    document.documentElement.style.removeProperty('--scrollbar-width');
-                }
-            });
-
-            // 搜索分析追蹤 (Google Analytics)
-            function trackSearchEvent(query) {
-                if (typeof gtag !== 'undefined') {
-                    gtag('event', 'search', {
-                        search_term: query,
-                        event_category: 'engagement',
-                        event_label: 'site_search'
-                    });
-                }
-            }
-
-            // 提交搜索時追蹤
-            document.querySelector('.search-form')?.addEventListener('submit', function(e) {
-                const searchInput = document.querySelector('#search-input');
-                const query = searchInput?.value.trim();
-                if (query) {
-                    trackSearchEvent(query);
-                }
-            });
-
-            // 移動端搜索表單追蹤
-            document.querySelector('.mobile-search-form')?.addEventListener('submit', function(e) {
-                const mobileSearchInput = this.querySelector('input[name="gs"]');
-                const query = mobileSearchInput?.value.trim();
-                if (query) {
-                    trackSearchEvent(query);
-                }
-            });
-        });
         </script>
     </header>
 

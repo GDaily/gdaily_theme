@@ -10,6 +10,8 @@
     /*  獲取縮圖 ID */
     $thumbnail_url = wp_get_attachment_image_src($thumbnail_id, array(400, 200, true))[0];
 
+
+
     // 獲取 hex 顏色欄位
     $tailwind_hex_base_color = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_base_color');
     $tailwind_hex_light_color = carbon_get_post_meta(get_the_ID(), 'tailwind_hex_light_color');
@@ -19,6 +21,10 @@
     // 決定最終使用的顏色值
     $final_base_color = !empty($tailwind_hex_base_color_custom) ? $tailwind_hex_base_color_custom : $tailwind_hex_base_color;
     $final_light_color = !empty($tailwind_hex_light_color_custom) ? $tailwind_hex_light_color_custom : $tailwind_hex_light_color;
+
+    // 檢查是否為預設值（空值或 #ffffff），如果是則不使用顏色樣式
+    $should_render_base_style = !empty($final_base_color) && $final_base_color !== '#ffffff' && $final_base_color !== '#FFFFFF';
+    $should_render_light_style = !empty($final_light_color) && $final_light_color !== '#ffffff' && $final_light_color !== '#FFFFFF';
 
     $meta_data = wp_get_attachment_metadata($thumbnail_id);
 
@@ -40,7 +46,8 @@
 
  <a href="<?php the_permalink(); ?>"
      class="group block   mb-12 overflow-hidden shadow rounded-xl max-h-[400px] max-w-[400px] mx-auto relative"
-     style="background-color: <?php echo esc_attr($final_light_color); ?>; background-opacity: 0.3;">
+     <?php if ($should_render_light_style): ?>
+     style="background-color: <?php echo esc_attr($final_light_color); ?>; background-opacity: 0.3;" <?php endif; ?>>
 
      <div class=" m-3 overflow-hidden rounded-md aspect-video" style="border-radius: 8px;">
 
@@ -60,8 +67,8 @@
      <div class="flex items-center justify-center pb-5 mt-8 font-extrabold">
          <div class="w-1/2 text-left">
 
-             <span class="inline-block px-3 py-1 ml-4 rounded-xl"
-                 style="  color: <?php echo esc_attr($final_base_color ?: '#000'); ?>;">
+             <span class="inline-block px-3 py-1 ml-4 rounded-xl" <?php if ($should_render_base_style): ?>
+                 style="color: <?php echo esc_attr($final_base_color); ?>;" <?php endif; ?>>
                  <svg class="inline w-4 h-4 " fill="currentColor" viewBox="0 0 20 20">
                      <path fill-rule="evenodd"
                          d="M17.707 9.293a1 1 0 010 1.414l-7 7a1 1 0 01-1.414 0l-7-7A.997.997 0 012 10V5a3 3 0 013-3h5c.256 0 .512.098.707.293l7 7zM5 6a1 1 0 100-2 1 1 0 000 2z"

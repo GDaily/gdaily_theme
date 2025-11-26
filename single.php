@@ -27,6 +27,14 @@ $post_data['final_light_color'] = !empty($post_data['light_color_custom']) ?
     $post_data['light_color_custom'] :
     $post_data['light_color_default'];
 
+// 檢查是否應該渲染顏色樣式（排除空值和 #ffffff）
+$should_render_base_style = !empty($post_data['final_base_color']) &&
+    $post_data['final_base_color'] !== '#ffffff' &&
+    $post_data['final_base_color'] !== '#FFFFFF';
+$should_render_light_style = !empty($post_data['final_light_color']) &&
+    $post_data['final_light_color'] !== '#ffffff' &&
+    $post_data['final_light_color'] !== '#FFFFFF';
+
 // 取得父分類 (安全檢查)
 $parent_category = !empty($post_data['category']) && $post_data['category'][0]->category_parent ?
     get_category($post_data['category'][0]->category_parent) : null;
@@ -51,6 +59,8 @@ if (have_posts()) :
         'post_id' => $post->ID,
         'final_base_color' => $post_data['final_base_color'],
         'final_light_color' => $post_data['final_light_color'],
+        'should_render_base_style' => $should_render_base_style,
+        'should_render_light_style' => $should_render_light_style,
         'thumbnail_url' => $post_data['thumbnail_url'],
         'adsense_enable' => $post_data['adsense_enable']
     ];
@@ -75,11 +85,15 @@ if (have_posts()) :
 
         $template_args['scale'] = 0.6 + 1 - $max_size / 192;
         $template_args['thumbnail_app_url'] = $thumbnail_app_url;
+        $template_args['image_width'] = $app_size[0];
+        $template_args['image_height'] = $app_size[1];
 
         get_template_part('part/single-app', get_post_format(), $template_args);
     } else {
         // 一般文章
         $template_args['imagePath'] = $post_data['thumbnail_url'];
+        $template_args['image_width'] = $post_data['size'][0];
+        $template_args['image_height'] = $post_data['size'][1];
 
         get_template_part('part/single-normal', get_post_format(), $template_args);
     }
@@ -87,8 +101,7 @@ endif;
 ?>
 
 <style type="text/css">
-    h2,
-    h3 {
+    <?php if ($should_render_base_style && $should_render_light_style): ?>h2 {
         background-color: <?php echo esc_attr($post_data['final_light_color']);
                             ?> !important;
         color: <?php echo esc_attr($post_data['final_base_color']);
@@ -96,6 +109,14 @@ endif;
         padding: 0.25rem 0.5rem;
         border-radius: 0.375rem;
     }
+
+    h3 {
+        color: <?php echo esc_attr($post_data['final_base_color']);
+                ?> !important;
+    }
+
+    <?php endif;
+    ?>
 </style>
 
 <?php

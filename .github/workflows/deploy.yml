@@ -97,18 +97,18 @@ jobs:
         run: |
           set -x
           # 上傳壓縮檔（verbose）
-          scp -vvv -o BatchMode=yes -o StrictHostKeyChecking=no deploy.tar.gz gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/
+          scp -vvv -o BatchMode=yes deploy.tar.gz gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/
 
           # 在遠端解壓並清理（verbose）
-          ssh -vvv -o BatchMode=yes -o StrictHostKeyChecking=no gdailyweb@gdaily.org << 'EOF'
-            set -x
+          ssh -vvv -o BatchMode=yes gdailyweb@gdaily.org << 'EOF'
+            set -ex
             cd ~/web/gdaily.org/public_html/wp-content/themes/
             
             # 備份當前主題
             if [ -d "gdaily_theme" ]; then
               mv gdaily_theme gdaily_theme.backup.$(date +%Y%m%d_%H%M%S)
               # 只保留最近3個備份
-              ls -dt gdaily_theme.backup.* | tail -n +4 | xargs rm -rf || true
+              ls -dt gdaily_theme.backup.* 2>/dev/null | tail -n +4 | xargs rm -rf
             fi
             
             # 解壓新版本
@@ -119,35 +119,6 @@ jobs:
             # 設定權限
             chmod -R 755 gdaily_theme
           EOF
-
-      # ============================================
-      # 如果你想要類似 rsync --delete 的行為（只刪除不存在的檔案）
-      # 請註解掉上面的部署步驟，改用下面這個：
-      # ============================================
-      # - name: Deploy to server (增量同步模式)
-      #   run: |
-      #     # 上傳壓縮檔到臨時目錄
-      #     scp -C deploy.tar.gz gdailyweb@gdaily.org:~/tmp_deploy.tar.gz
-      #
-      #     # 在遠端解壓並同步
-      #     ssh gdailyweb@gdaily.org << 'EOF'
-      #       # 解壓到臨時目錄
-      #       rm -rf ~/tmp_deploy
-      #       mkdir -p ~/tmp_deploy
-      #       tar -xzf ~/tmp_deploy.tar.gz -C ~/tmp_deploy
-      #       rm ~/tmp_deploy.tar.gz
-      #
-      #       # 使用 rsync 同步（會刪除目標目錄中不存在於源目錄的檔案）
-      #       rsync -av --delete \
-      #         ~/tmp_deploy/ \
-      #         ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
-      #
-      #       # 清理臨時目錄
-      #       rm -rf ~/tmp_deploy
-      #
-      #       # 設定權限
-      #       chmod -R 755 ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
-      #     EOF
 
       - name: Verify deployment
         run: |

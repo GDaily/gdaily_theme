@@ -11,7 +11,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    environment: production  # Assuming the environment ID corresponds to 'production'
+    environment: gdailyweb
 
     steps:
     - name: Checkout code

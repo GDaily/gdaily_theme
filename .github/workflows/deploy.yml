@@ -32,7 +32,7 @@ jobs:
     - name: Install SSH key
       uses: webfactory/ssh-agent@v0.5.4
       with:
-        ssh-private-key: ${{ secrets.GDAILYWEB }}
+        ssh-private-key: ${{ secrets.gdailyweb }}
 
     - name: Add server to known hosts
       run: |

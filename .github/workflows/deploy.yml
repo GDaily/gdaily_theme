@@ -30,10 +30,14 @@ jobs:
       run: npm run production  # Assuming your package.json has a 'production' script for building
 
     - name: Install SSH key
-      uses: shimataro/ssh-key-action@v2
+      uses: webfactory/ssh-agent@v0.5.4
       with:
-        key: ${{ secrets.GDAILYWEB }}
-        known_hosts: 'gdaily-server'
+        ssh-private-key: ${{ secrets.GDAILYWEB }}
+
+    - name: Add server to known hosts
+      run: |
+        mkdir -p ~/.ssh
+        ssh-keyscan -H gdaily-server >> ~/.ssh/known_hosts
 
     - name: Deploy to server
       run: |

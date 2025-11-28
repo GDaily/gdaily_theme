@@ -51,13 +51,6 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GDAILYWEB }}
 
-      - name: Inspect SSH agent and keys
-        run: |
-          echo "SSH_AUTH_SOCK=$SSH_AUTH_SOCK"
-          # 列出 agent 裡的金鑰（只會顯示指紋，不會洩漏私鑰）
-          ssh-add -l || true
-          env | grep SSH || true
-
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
@@ -67,14 +60,11 @@ jobs:
 
       - name: Test SSH connection
         run: |
-          ssh -v gdailyweb@gdaily.org "echo 'SSH connection successful' && pwd"
+          ssh -o ConnectTimeout=10 -o BatchMode=yes gdailyweb@gdaily.org "echo 'SSH connection successful' && pwd"
 
       - name: Prepare deployment files
         run: |
-          # 創建臨時部署目錄
           mkdir -p deploy_tmp
-
-          # 複製需要的檔案（排除不需要的）
           rsync -a \
             --exclude='.git' \
             --exclude='node_modules' \
@@ -90,36 +80,91 @@ jobs:
 
       - name: Create deployment package
         run: |
-          # 從臨時目錄創建壓縮檔
           tar -czf deploy.tar.gz -C deploy_tmp .
+          ls -lh deploy.tar.gz
 
-      - name: Deploy to server (完全覆蓋模式)
+      - name: Upload deployment package
         run: |
-          set -x
-          # 上傳壓縮檔（verbose）
-          scp -vvv -o BatchMode=yes deploy.tar.gz gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/
+          scp -o ConnectTimeout=30 \
+              -o ServerAliveInterval=10 \
+              -o ServerAliveCountMax=3 \
+              -o BatchMode=yes \
+              deploy.tar.gz gdailyweb@gdaily.org:~/deploy.tar.gz
 
-          # 在遠端解壓並清理（verbose）
-          ssh -vvv -o BatchMode=yes gdailyweb@gdaily.org << 'EOF'
-            set -ex
-            cd ~/web/gdaily.org/public_html/wp-content/themes/
+      - name: Create backup and prepare directory
+        run: |
+          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+            set -e
+            THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
+            BACKUP_NAME="gdaily_theme.backup.$(date +%Y%m%d_%H%M%S)"
             
-            # 備份當前主題
-            if [ -d "gdaily_theme" ]; then
-              mv gdaily_theme gdaily_theme.backup.$(date +%Y%m%d_%H%M%S)
-              # 只保留最近3個備份
-              ls -dt gdaily_theme.backup.* 2>/dev/null | tail -n +4 | xargs rm -rf
+            # 確保父目錄存在
+            mkdir -p ~/web/gdaily.org/public_html/wp-content/themes/
+            
+            # 備份現有主題
+            if [ -d "$THEME_DIR" ]; then
+              echo "Creating backup: $BACKUP_NAME"
+              mv "$THEME_DIR" ~/web/gdaily.org/public_html/wp-content/themes/"$BACKUP_NAME"
             fi
             
-            # 解壓新版本
-            mkdir -p gdaily_theme
-            tar -xzf deploy.tar.gz -C gdaily_theme
-            rm deploy.tar.gz
+            # 建立新目錄
+            mkdir -p "$THEME_DIR"
+            echo "Directory prepared successfully"
+          ENDSSH
+
+      - name: Extract deployment package
+        run: |
+          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+            set -e
+            THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
+            
+            # 解壓檔案
+            echo "Extracting files to $THEME_DIR"
+            tar -xzf ~/deploy.tar.gz -C "$THEME_DIR"
+            
+            # 刪除上傳的壓縮檔
+            rm ~/deploy.tar.gz
             
             # 設定權限
-            chmod -R 755 gdaily_theme
-          EOF
+            chmod -R 755 "$THEME_DIR"
+            
+            echo "Extraction completed successfully"
+          ENDSSH
+
+      - name: Clean up old backups
+        run: |
+          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+            set -e
+            THEMES_DIR=~/web/gdaily.org/public_html/wp-content/themes/
+            
+            # 只保留最近3個備份
+            cd "$THEMES_DIR"
+            ls -dt gdaily_theme.backup.* 2>/dev/null | tail -n +4 | xargs -r rm -rf
+            
+            echo "Cleanup completed"
+          ENDSSH
 
       - name: Verify deployment
         run: |
-          ssh gdailyweb@gdaily.org "ls -la ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme"
+          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+            set -e
+            THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
+            
+            echo "=== Deployment Verification ==="
+            echo "Theme directory contents:"
+            ls -lah "$THEME_DIR" | head -20
+            
+            echo ""
+            echo "Total files:"
+            find "$THEME_DIR" -type f | wc -l
+            
+            echo ""
+            echo "Directory size:"
+            du -sh "$THEME_DIR"
+          ENDSSH
+
+      - name: Deployment Summary
+        if: success()
+        run: |
+          echo "✅ Deployment completed successfully!"
+          echo "Theme deployed to: ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme"

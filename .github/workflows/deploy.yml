@@ -17,11 +17,26 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.1"
+          tools: composer:v2
+          coverage: none
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
           cache: "npm"
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
 
       - name: Cache node modules
         uses: actions/cache@v4
@@ -31,7 +46,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-node-
 
-      - name: Install dependencies
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - name: Install npm dependencies
         run: npm ci --prefer-offline --no-audit
 
       - name: Build assets
@@ -93,6 +111,8 @@ jobs:
             --exclude='package-lock.json' \
             --exclude='composer.json' \
             --exclude='composer.lock' \
+            --exclude='phpunit.xml' \
+            --exclude='tests/' \
             --progress \
             ./ gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
 
@@ -153,6 +173,13 @@ jobs:
                 echo "  ✗ $file missing"
               fi
             done
+            echo ""
+            if [ -d "$THEME_DIR/vendor" ]; then
+              echo "  ✓ vendor/ directory exists (Composer dependencies installed)"
+              echo "    Size: $(du -sh "$THEME_DIR/vendor" | cut -f1)"
+            else
+              echo "  ✗ vendor/ directory missing"
+            fi
           ENDSSH
 
       - name: Deployment Summary
@@ -169,6 +196,7 @@ jobs:
           echo "🔄 Method: rsync (incremental sync)"
           echo "💾 Backups: Last 3 backups retained"
           echo "🔒 Permissions: Directories 755, Files 644"
+          echo "📚 Composer: Dependencies installed and deployed"
           echo ""
           echo "════════════════════════════════════════"
 

@@ -34,11 +34,11 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.GDAILYWEB }}
 
-    - name: Add server to known hosts
-      run: |
-        mkdir -p ~/.ssh
-        ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
 
-    - name: Deploy to server
-      run: |
-        rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='once' --exclude='source' ./ gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
+      - name: Deploy to server
+        run: |
+          rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='once' --exclude='source' ./ gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/

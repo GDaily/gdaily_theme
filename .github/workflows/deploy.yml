@@ -75,7 +75,8 @@ jobs:
       - name: Write deploy info file
         run: |
           # 在 runner 上產生 deploy_info.json，rsync 會上傳到遠端主題目錄
-          echo "{\"deployed_at\":\"$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")\", \"commit\":\"${GITHUB_SHA}\"}" > deploy_info.json
+          # 使用 printf 確保不會產生多餘的引號，格式為 ISO8601 (UTC)
+          printf '{"deployed_at":"%s","commit":"%s"}\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$GITHUB_SHA" > deploy_info.json
           echo "deploy_info.json content:"
           cat deploy_info.json
 

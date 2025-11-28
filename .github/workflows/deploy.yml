@@ -72,6 +72,13 @@ jobs:
           ssh -o ConnectTimeout=10 -o BatchMode=yes gdailyweb@gdaily.org \
             "echo '✓ SSH connection successful' && pwd"
 
+      - name: Write deploy info file
+        run: |
+          # 在 runner 上產生 deploy_info.json，rsync 會上傳到遠端主題目錄
+          echo "{\"deployed_at\":\"$(date -u +\"%Y-%m-%dT%H:%M:%SZ\")\", \"commit\":\"${GITHUB_SHA}\"}" > deploy_info.json
+          echo "deploy_info.json content:"
+          cat deploy_info.json
+
       - name: Create backup on server
         run: |
           ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'

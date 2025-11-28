@@ -14,31 +14,31 @@ jobs:
     environment: gdailyweb
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
 
-    - name: Install dependencies
-      run: npm install
+      - name: Install dependencies
+        run: npm install
 
-    - name: Build assets
-      run: npm run production  # Assuming your package.json has a 'production' script for building
+      - name: Build assets
+        run: npm run production # Assuming your package.json has a 'production' script for building
 
-    - name: Install SSH key
-      uses: webfactory/ssh-agent@v0.5.4
-      with:
-        ssh-private-key: ${{ secrets.GDAILYWEB }}
+      - name: Install SSH key
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.GDAILYWEB }}
 
     - name: Add server to known hosts
       run: |
         mkdir -p ~/.ssh
-        ssh-keyscan -H gdaily-server >> ~/.ssh/known_hosts
+        ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
 
     - name: Deploy to server
       run: |
-        rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='once' --exclude='source' ./ gdailyweb@gdaily-server:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
+        rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='once' --exclude='source' ./ gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/

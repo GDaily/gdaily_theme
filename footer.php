@@ -26,22 +26,29 @@
             }
         }
 
-        if (! $deploy_info_path) {
-            echo '<!-- deploy_info.json not found. Checked: ' . esc_html(implode(', ', $check_paths)) . ' -->';
-        } else {
+        if ($deploy_info_path) {
             $json = @file_get_contents($deploy_info_path);
             $data = @json_decode($json, true);
-            if (json_last_error() === JSON_ERROR_NONE && is_array($data) && ! empty($data['deployed_at'])) {
-                $deployed_at = $data['deployed_at'];
-                $commit = isset($data['commit']) ? $data['commit'] : '';
-
-                $dt = new DateTime($deployed_at, new DateTimeZone('UTC')); // 原本是 UTC
-                $dt->setTimezone(new DateTimeZone('Asia/Hong_Kong')); // 轉為香港時區
-                echo '<p class="text-sm">部署時間（HK）：' . esc_html($dt->format('Y-m-d H:i:s')) . ($commit ? ' — ' . esc_html(substr($commit, 0, 7)) : '') . '</p>';
-            } else {
-                echo '<!-- deploy_info.json invalid JSON or missing deployed_at -->';
-            }
         }
+
+        if (!isset($data['deployed_at'])) {
+            // 找不到 JSON 或 JSON 壞掉 → 今日 HK
+            $dt = new DateTime('now', new DateTimeZone('Asia/Hong_Kong'));
+            $time_str = $dt->format('Y-m-d H:i:s');
+            $commit_short = '';
+        } else {
+            // JSON 正常
+            $dt = new DateTime($data['deployed_at'], new DateTimeZone('UTC'));
+            $dt->setTimezone(new DateTimeZone('Asia/Hong_Kong'));
+            $time_str = $dt->format('Y-m-d H:i:s');
+            $commit_short = substr($data['commit'] ?? '', 0, 7);
+        }
+
+        // ★ Footer 最簡短顯示（含 HK）
+        echo '<p class="text-[11px] text-gray-500 mt-2">
+        Deploy：' . esc_html($time_str) . '（HK）' .
+            ($commit_short ? ' · ' . esc_html($commit_short) : '') . '
+      </p>';
         ?>
 
 

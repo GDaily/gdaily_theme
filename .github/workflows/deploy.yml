@@ -23,11 +23,28 @@ jobs:
           node-version: "18"
           cache: "npm"
 
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
       - name: Install dependencies
-        run: npm install
+        run: npm ci --prefer-offline --no-audit
 
       - name: Build assets
-        run: npm run production # Assuming your package.json has a 'production' script for building
+        run: npm run production
+
+      - name: Cache build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            dist
+            build
+            public
+          key: ${{ runner.os }}-build-${{ github.sha }}
 
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.5.4
@@ -39,6 +56,73 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
 
-      - name: Deploy to server
+      - name: Create deployment package
         run: |
-          rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='once' --exclude='source' ./ gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
+          tar -czf deploy.tar.gz \
+            --exclude='.git' \
+            --exclude='node_modules' \
+            --exclude='.github' \
+            --exclude='once' \
+            --exclude='source' \
+            --exclude='*.log' \
+            --exclude='.env' \
+            --exclude='.DS_Store' \
+            .
+
+      - name: Deploy to server (完全覆蓋模式)
+        run: |
+          # 上傳壓縮檔
+          scp -C deploy.tar.gz gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/
+
+          # 在遠端解壓並清理
+          ssh gdailyweb@gdaily.org << 'EOF'
+            cd ~/web/gdaily.org/public_html/wp-content/themes/
+            
+            # 備份當前主題
+            if [ -d "gdaily_theme" ]; then
+              mv gdaily_theme gdaily_theme.backup.$(date +%Y%m%d_%H%M%S)
+              # 只保留最近3個備份
+              ls -dt gdaily_theme.backup.* | tail -n +4 | xargs rm -rf
+            fi
+            
+            # 解壓新版本
+            mkdir -p gdaily_theme
+            tar -xzf deploy.tar.gz -C gdaily_theme
+            rm deploy.tar.gz
+            
+            # 設定權限
+            chmod -R 755 gdaily_theme
+          EOF
+
+      # ============================================
+      # 如果你想要類似 rsync --delete 的行為（只刪除不存在的檔案）
+      # 請註解掉上面的部署步驟，改用下面這個：
+      # ============================================
+      # - name: Deploy to server (增量同步模式)
+      #   run: |
+      #     # 上傳壓縮檔到臨時目錄
+      #     scp -C deploy.tar.gz gdailyweb@gdaily.org:~/tmp_deploy.tar.gz
+      #
+      #     # 在遠端解壓並同步
+      #     ssh gdailyweb@gdaily.org << 'EOF'
+      #       # 解壓到臨時目錄
+      #       rm -rf ~/tmp_deploy
+      #       mkdir -p ~/tmp_deploy
+      #       tar -xzf ~/tmp_deploy.tar.gz -C ~/tmp_deploy
+      #       rm ~/tmp_deploy.tar.gz
+      #
+      #       # 使用 rsync 同步（會刪除目標目錄中不存在於源目錄的檔案）
+      #       rsync -av --delete \
+      #         ~/tmp_deploy/ \
+      #         ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
+      #
+      #       # 清理臨時目錄
+      #       rm -rf ~/tmp_deploy
+      #
+      #       # 設定權限
+      #       chmod -R 755 ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
+      #     EOF
+
+      - name: Verify deployment
+        run: |
+          ssh gdailyweb@gdaily.org "ls -la ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme"

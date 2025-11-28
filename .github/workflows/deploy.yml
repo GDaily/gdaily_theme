@@ -54,7 +54,13 @@ jobs:
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
           ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Test SSH connection
+        run: |
+          ssh -v gdailyweb@gdaily.org "echo 'SSH connection successful' && pwd"
 
       - name: Prepare deployment files
         run: |

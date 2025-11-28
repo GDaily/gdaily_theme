@@ -56,9 +56,13 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
 
-      - name: Create deployment package
+      - name: Prepare deployment files
         run: |
-          tar -czf deploy.tar.gz \
+          # 創建臨時部署目錄
+          mkdir -p deploy_tmp
+
+          # 複製需要的檔案（排除不需要的）
+          rsync -a \
             --exclude='.git' \
             --exclude='node_modules' \
             --exclude='.github' \
@@ -67,7 +71,14 @@ jobs:
             --exclude='*.log' \
             --exclude='.env' \
             --exclude='.DS_Store' \
-            .
+            --exclude='deploy_tmp' \
+            --exclude='deploy.tar.gz' \
+            ./ deploy_tmp/
+
+      - name: Create deployment package
+        run: |
+          # 從臨時目錄創建壓縮檔
+          tar -czf deploy.tar.gz -C deploy_tmp .
 
       - name: Deploy to server (完全覆蓋模式)
         run: |

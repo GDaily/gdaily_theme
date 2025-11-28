@@ -37,15 +37,6 @@ jobs:
       - name: Build assets
         run: npm run production
 
-      - name: Cache build artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            dist
-            build
-            public
-          key: ${{ runner.os }}-build-${{ github.sha }}
-
       - name: Install SSH key
         uses: webfactory/ssh-agent@v0.5.4
         with:
@@ -60,75 +51,64 @@ jobs:
 
       - name: Test SSH connection
         run: |
-          ssh -o ConnectTimeout=10 -o BatchMode=yes gdailyweb@gdaily.org "echo 'SSH connection successful' && pwd"
+          ssh -o ConnectTimeout=10 -o BatchMode=yes gdailyweb@gdaily.org \
+            "echo '✓ SSH connection successful' && pwd"
 
-      - name: Prepare deployment files
+      - name: Create backup on server
         run: |
-          mkdir -p deploy_tmp
-          rsync -a \
-            --exclude='.git' \
-            --exclude='node_modules' \
-            --exclude='.github' \
-            --exclude='once' \
-            --exclude='source' \
+          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+            set -e
+            THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
+            
+            # 如果主題目錄存在，建立備份
+            if [ -d "$THEME_DIR" ]; then
+              BACKUP_NAME="gdaily_theme.backup.$(date +%Y%m%d_%H%M%S)"
+              echo "Creating backup: $BACKUP_NAME"
+              cp -r "$THEME_DIR" ~/web/gdaily.org/public_html/wp-content/themes/"$BACKUP_NAME"
+              echo "✓ Backup created successfully"
+            else
+              echo "No existing theme found, skipping backup"
+            fi
+            
+            # 確保目標目錄存在
+            mkdir -p "$THEME_DIR"
+          ENDSSH
+
+      - name: Deploy files via rsync
+        run: |
+          echo "Starting rsync deployment..."
+          rsync -avz --delete \
+            -e "ssh -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o BatchMode=yes" \
+            --exclude='.git/' \
+            --exclude='.github/' \
+            --exclude='node_modules/' \
+            --exclude='once/' \
+            --exclude='source/' \
             --exclude='*.log' \
             --exclude='.env' \
             --exclude='.DS_Store' \
-            --exclude='deploy_tmp' \
-            --exclude='deploy.tar.gz' \
-            ./ deploy_tmp/
+            --exclude='.gitignore' \
+            --exclude='README.md' \
+            --exclude='package.json' \
+            --exclude='package-lock.json' \
+            --exclude='composer.json' \
+            --exclude='composer.lock' \
+            --progress \
+            ./ gdailyweb@gdaily.org:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/
 
-      - name: Create deployment package
-        run: |
-          tar -czf deploy.tar.gz -C deploy_tmp .
-          ls -lh deploy.tar.gz
+          echo "✓ Rsync deployment completed"
 
-      - name: Upload deployment package
-        run: |
-          scp -o ConnectTimeout=30 \
-              -o ServerAliveInterval=10 \
-              -o ServerAliveCountMax=3 \
-              -o BatchMode=yes \
-              deploy.tar.gz gdailyweb@gdaily.org:~/deploy.tar.gz
-
-      - name: Create backup and prepare directory
-        run: |
-          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
-            set -e
-            THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
-            BACKUP_NAME="gdaily_theme.backup.$(date +%Y%m%d_%H%M%S)"
-            
-            # 確保父目錄存在
-            mkdir -p ~/web/gdaily.org/public_html/wp-content/themes/
-            
-            # 備份現有主題
-            if [ -d "$THEME_DIR" ]; then
-              echo "Creating backup: $BACKUP_NAME"
-              mv "$THEME_DIR" ~/web/gdaily.org/public_html/wp-content/themes/"$BACKUP_NAME"
-            fi
-            
-            # 建立新目錄
-            mkdir -p "$THEME_DIR"
-            echo "Directory prepared successfully"
-          ENDSSH
-
-      - name: Extract deployment package
+      - name: Set correct permissions
         run: |
           ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
             set -e
             THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
             
-            # 解壓檔案
-            echo "Extracting files to $THEME_DIR"
-            tar -xzf ~/deploy.tar.gz -C "$THEME_DIR"
+            echo "Setting permissions..."
+            find "$THEME_DIR" -type d -exec chmod 755 {} \;
+            find "$THEME_DIR" -type f -exec chmod 644 {} \;
             
-            # 刪除上傳的壓縮檔
-            rm ~/deploy.tar.gz
-            
-            # 設定權限
-            chmod -R 755 "$THEME_DIR"
-            
-            echo "Extraction completed successfully"
+            echo "✓ Permissions set successfully"
           ENDSSH
 
       - name: Clean up old backups
@@ -137,11 +117,16 @@ jobs:
             set -e
             THEMES_DIR=~/web/gdaily.org/public_html/wp-content/themes/
             
-            # 只保留最近3個備份
+            echo "Cleaning old backups (keeping last 3)..."
             cd "$THEMES_DIR"
-            ls -dt gdaily_theme.backup.* 2>/dev/null | tail -n +4 | xargs -r rm -rf
+            BACKUP_COUNT=$(ls -d gdaily_theme.backup.* 2>/dev/null | wc -l)
             
-            echo "Cleanup completed"
+            if [ "$BACKUP_COUNT" -gt 3 ]; then
+              ls -dt gdaily_theme.backup.* | tail -n +4 | xargs rm -rf
+              echo "✓ Removed $((BACKUP_COUNT - 3)) old backup(s)"
+            else
+              echo "✓ No old backups to remove (total: $BACKUP_COUNT)"
+            fi
           ENDSSH
 
       - name: Verify deployment
@@ -151,20 +136,50 @@ jobs:
             THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
             
             echo "=== Deployment Verification ==="
-            echo "Theme directory contents:"
+            echo ""
+            echo "Theme directory:"
             ls -lah "$THEME_DIR" | head -20
-            
             echo ""
-            echo "Total files:"
-            find "$THEME_DIR" -type f | wc -l
-            
+            echo "Statistics:"
+            echo "  Total files: $(find "$THEME_DIR" -type f | wc -l)"
+            echo "  Total directories: $(find "$THEME_DIR" -type d | wc -l)"
+            echo "  Directory size: $(du -sh "$THEME_DIR" | cut -f1)"
             echo ""
-            echo "Directory size:"
-            du -sh "$THEME_DIR"
+            echo "Key files check:"
+            for file in style.css functions.php index.php; do
+              if [ -f "$THEME_DIR/$file" ]; then
+                echo "  ✓ $file exists"
+              else
+                echo "  ✗ $file missing"
+              fi
+            done
           ENDSSH
 
       - name: Deployment Summary
         if: success()
         run: |
-          echo "✅ Deployment completed successfully!"
-          echo "Theme deployed to: ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme"
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "✅ Deployment Completed Successfully!"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "📦 Theme deployed to:"
+          echo "   ~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme"
+          echo ""
+          echo "🔄 Method: rsync (incremental sync)"
+          echo "💾 Backups: Last 3 backups retained"
+          echo "🔒 Permissions: Directories 755, Files 644"
+          echo ""
+          echo "════════════════════════════════════════"
+
+      - name: Deployment Failed
+        if: failure()
+        run: |
+          echo ""
+          echo "════════════════════════════════════════"
+          echo "❌ Deployment Failed"
+          echo "════════════════════════════════════════"
+          echo ""
+          echo "Please check the logs above for details."
+          echo "The previous backup is still available on the server."
+          echo ""

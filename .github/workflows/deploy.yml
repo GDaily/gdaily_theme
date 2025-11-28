@@ -1,0 +1,40 @@
+name: CI/CD for Product Branch
+
+on:
+  push:
+    branches:
+      - product
+  pull_request:
+    branches:
+      - product
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment: production  # Assuming the environment ID corresponds to 'production'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm install
+
+    - name: Build assets
+      run: npm run production  # Assuming your package.json has a 'production' script for building
+
+    - name: Install SSH key
+      uses: shimataro/ssh-key-action@v2
+      with:
+        key: ${{ secrets.GDAILYWEB }}
+        known_hosts: 'gdaily-server'
+
+    - name: Deploy to server
+      run: |
+        rsync -avz --delete --exclude='.git' --exclude='node_modules' --exclude='.github' --exclude='once' --exclude='source' ./ gdailyweb@gdaily-server:~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme/

@@ -67,7 +67,7 @@ class ColorMatcher {
     }
 
     // 計算兩個 Lab 顏色的 ΔE*ab (CIE76)
-    private function deltaE($lab1, $lab2) {
+    private function deltaE76($lab1, $lab2) {
         [$l1, $a1, $b1] = $lab1;
         [$l2, $a2, $b2] = $lab2;
         return sqrt(
@@ -75,6 +75,45 @@ class ColorMatcher {
             pow($a1 - $a2, 2) +
             pow($b1 - $b2, 2)
         );
+    }
+
+    // 計算兩個 Lab 顏色的 ΔE*94 (CIE94) - 更符合人眼感知
+    // 該公式在紡織品、油漆等應用中被廣泛使用，對人眼感知更準確
+    private function deltaE94($lab1, $lab2, $application = 'graphic') {
+        [$l1, $a1, $b1] = $lab1;
+        [$l2, $a2, $b2] = $lab2;
+        
+        $dL = $l1 - $l2;
+        $dA = $a1 - $a2;
+        $dB = $b1 - $b2;
+        
+        // 計算色度差異
+        $c1 = sqrt($a1 * $a1 + $b1 * $b1);
+        $c2 = sqrt($a2 * $a2 + $b2 * $b2);
+        $dC = $c1 - $c2;
+        
+        // 計算色調差異
+        $dH_squared = ($dA * $dA) + ($dB * $dB) - ($dC * $dC);
+        $dH = $dH_squared > 0 ? sqrt($dH_squared) : 0;
+        
+        // 根據應用類型選擇加權因子
+        // graphic: 圖形設計 | textile: 紡織 | reference: 參考標準
+        $weights = [
+            'graphic' => ['kL' => 2.0, 'kC' => 1.0, 'kH' => 1.0],
+            'textile' => ['kL' => 2.0, 'kC' => 1.0, 'kH' => 1.0],
+            'reference' => ['kL' => 1.0, 'kC' => 1.0, 'kH' => 1.0],
+        ];
+        
+        $w = $weights[$application] ?? $weights['graphic'];
+        
+        // CIE94 計算
+        $de94 = sqrt(
+            pow($dL / $w['kL'], 2) +
+            pow($dC / (1 + 0.045 * $c1) / $w['kC'], 2) +
+            pow($dH / (1 + 0.015 * $c1) / $w['kH'], 2)
+        );
+        
+        return $de94;
     }
 
     // 從調色盤中選擇「最適合 Tailwind」的顏色（可加權：避免過暗/過亮）
@@ -131,7 +170,7 @@ class ColorMatcher {
         if (isset($this->tailwindColors['base'])) {
             foreach ($this->tailwindColors['base'] as $name => $rgb) {
                 $lab = $this->rgbToLab($rgb);
-                $distance = $this->deltaE($representativeLab, $lab);
+                $distance = $this->deltaE94($representativeLab, $lab, 'graphic');
                 if ($distance < $minDistance) {
                     $minDistance = $distance;
                     $closestBaseColor = $name;

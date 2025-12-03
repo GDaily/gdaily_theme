@@ -57,3 +57,32 @@ remove_action('load-themes.php', 'wp_update_themes');
 remove_action('load-update.php', 'wp_update_themes');
 remove_action('load-update-core.php', 'wp_update_themes');
 remove_action('admin_init', '_maybe_update_themes');
+
+/**
+ * 隱藏非管理員的控制台和編輯菜單
+ */
+add_action('admin_menu', 'hide_menu_for_non_admins', 999);
+function hide_menu_for_non_admins()
+{
+    // 檢查用戶是否已登錄且不是管理員
+    if (is_user_logged_in() && !current_user_can('manage_options')) {
+        global $menu;
+        
+        // 要隱藏的菜單項
+        $hide_menus = array(
+            'index.php',    // 控制台
+            'edit.php',     // 文章
+            'upload.php',   // 媒體
+            'edit.php?post_type=page'  // 頁面
+        );
+        
+        // 移除菜單項
+        if (isset($menu)) {
+            foreach ($menu as $key => $item) {
+                if (isset($item[2]) && in_array($item[2], $hide_menus)) {
+                    unset($menu[$key]);
+                }
+            }
+        }
+    }
+}

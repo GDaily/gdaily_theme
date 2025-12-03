@@ -7,7 +7,7 @@ class ColorMatcher {
     private $tailwindColors;
 
     public function __construct() {
-        $jsonPath = __DIR__ . '/../data/tailwind-colors.json';
+        $jsonPath = get_template_directory() . '/data/tailwind-colors.json';
         if (!file_exists($jsonPath)) {
             error_log('ColorMatcher: tailwind-colors.json file not found at: ' . $jsonPath);
             throw new Exception('Tailwind colors file not found');
@@ -172,23 +172,42 @@ class ColorMatcher {
 
 
 /**
+ * 檢查是否有可用的圖片處理擴展
+ * 
+ * @return bool
+ */
+function has_image_processing_extension() {
+    return extension_loaded('gd') || extension_loaded('imagick') || extension_loaded('gmagick');
+}
+
+/**
  * 處理單篇文章的縮圖顏色分析和設定
  * 
  * @param int $post_id 文章 ID
  * @return array|false 返回處理結果或 false（如果失敗）
  */
 function process_post_tailwind_color($post_id) {
+    // 檢查是否有可用的圖片處理擴展
+    if (!has_image_processing_extension()) {
+        error_log('ColorMatcher: No image processing extension available (GD, Imagick, or Gmagick required). Skipping color analysis for post ' . $post_id);
+        return false;
+    }
+    
     // 檢查是否有縮圖
     $thumbnail_id = get_post_thumbnail_id($post_id);
     if (!$thumbnail_id) {
+        error_log('ColorMatcher: No thumbnail found for post ID: ' . $post_id);
         return false;
     }
     
     // 檢查縮圖文件是否存在
     $thumbnail_serverPath = get_attached_file($thumbnail_id);
     if (!file_exists($thumbnail_serverPath)) {
+        error_log('ColorMatcher: Thumbnail file not found at: ' . $thumbnail_serverPath);
         return false;
     }
+    
+    error_log('ColorMatcher: Processing post ID ' . $post_id . ' with image: ' . $thumbnail_serverPath);
     
     try {
         // 使用 ColorMatcher 分析顏色
@@ -199,6 +218,8 @@ function process_post_tailwind_color($post_id) {
         carbon_set_post_meta($post_id, 'tailwind_hex_base_color', $colorResult['tailwind_hex_base_color']);
         carbon_set_post_meta($post_id, 'tailwind_hex_light_color', $colorResult['tailwind_hex_light_color']);
         
+        error_log('ColorMatcher: Successfully saved colors for post ' . $post_id . ': base=' . $colorResult['tailwind_hex_base_color'] . ', light=' . $colorResult['tailwind_hex_light_color']);
+        
         return [
             'success' => true,
             'post_id' => $post_id, 
@@ -207,6 +228,7 @@ function process_post_tailwind_color($post_id) {
         ];
         
     } catch (Exception $e) {
+        error_log('ColorMatcher: Exception for post ' . $post_id . ': ' . $e->getMessage());
         return false;
     }
 }
@@ -219,21 +241,36 @@ function process_post_tailwind_color($post_id) {
  * @param int $post_id 文章 ID
  */
 function auto_process_tailwind_color_on_save($post_id) {
+    error_log('ColorMatcher: auto_process_tailwind_color_on_save called for post ID: ' . $post_id);
+    
     // 檢查是否為自動儲存或修訂版本
-    if (wp_is_post_autosave($post_id) || wp_is_post_revision($post_id)) {
+    if (wp_is_post_autosave($post_id)) {
+        error_log('ColorMatcher: Skipped - autosave for post ID: ' . $post_id);
+        return;
+    }
+    
+    if (wp_is_post_revision($post_id)) {
+        error_log('ColorMatcher: Skipped - revision for post ID: ' . $post_id);
         return;
     }
     
     // 只處理 'post' 類型的文章
-    if (get_post_type($post_id) !== 'post') {
+    $post_type = get_post_type($post_id);
+    if ($post_type !== 'post') {
+        error_log('ColorMatcher: Skipped - post type is ' . $post_type . ' not "post" for post ID: ' . $post_id);
         return;
     }
     
     // 執行顏色分析（不限制發布狀態）
+    error_log('ColorMatcher: Processing color analysis for post ID: ' . $post_id);
     process_post_tailwind_color($post_id);
 }
 
-// 註冊多個 hook：在文章儲存時自動執行
-add_action('save_post', 'auto_process_tailwind_color_on_save', 10, 1);
-add_action('wp_insert_post', 'auto_process_tailwind_color_on_save', 10, 1);
-add_action('edit_post', 'auto_process_tailwind_color_on_save', 10, 1);
+// 使用 carbon_fields 容器保存後的 hook - 確保在 Carbon Fields 完全保存後執行
+add_action('carbon_fields_post_meta_container_saved', function ($post_id, $container) {
+    error_log('ColorMatcher: carbon_fields_post_meta_container_saved hook triggered for post ID: ' . $post_id);
+    auto_process_tailwind_color_on_save($post_id);
+}, 10, 2);
+
+// 備用：也在一般的 save_post hook 上註冊，優先級設定為較低以確保 Carbon Fields 先執行
+add_action('save_post', 'auto_process_tailwind_color_on_save', 25, 1);

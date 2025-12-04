@@ -64,12 +64,12 @@ jobs:
         run: |
           mkdir -p ~/.ssh
           chmod 700 ~/.ssh
-          ssh-keyscan -H gdaily.org >> ~/.ssh/known_hosts
+          ssh-keyscan -p 8622 -H gdaily.org >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
       - name: Test SSH connection
         run: |
-          ssh -o ConnectTimeout=10 -o BatchMode=yes gdailyweb@gdaily.org \
+          ssh -p 8622 -o ConnectTimeout=10 -o BatchMode=yes gdailyweb@gdaily.org \
             "echo '✓ SSH connection successful' && pwd"
 
       - name: Write deploy info file
@@ -82,7 +82,7 @@ jobs:
 
       - name: Create backup on server
         run: |
-          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+          ssh -p 8622 -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
             set -e
             THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
             
@@ -104,7 +104,7 @@ jobs:
         run: |
           echo "Starting rsync deployment..."
           rsync -avz --delete \
-            -e "ssh -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o BatchMode=yes" \
+            -e "ssh -p 8622 -o ConnectTimeout=30 -o ServerAliveInterval=10 -o ServerAliveCountMax=3 -o BatchMode=yes" \
             --exclude='.git/' \
             --exclude='.github/' \
             --exclude='node_modules/' \
@@ -128,7 +128,7 @@ jobs:
 
       - name: Set correct permissions
         run: |
-          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+          ssh -p 8622 -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
             set -e
             THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
             
@@ -141,7 +141,7 @@ jobs:
 
       - name: Clean up old backups
         run: |
-          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+          ssh -p 8622 -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
             set -e
             THEMES_DIR=~/web/gdaily.org/public_html/wp-content/themes/
             
@@ -159,7 +159,7 @@ jobs:
 
       - name: Verify deployment
         run: |
-          ssh -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
+          ssh -p 8622 -o ConnectTimeout=30 -o BatchMode=yes gdailyweb@gdaily.org bash << 'ENDSSH'
             set -e
             THEME_DIR=~/web/gdaily.org/public_html/wp-content/themes/gdaily_theme
             
